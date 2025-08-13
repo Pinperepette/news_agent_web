@@ -10,7 +10,7 @@ A modern web-based news analysis platform with AI-powered critical analysis, bui
 - **📊 MongoDB Storage**: Persistent storage for articles and analysis results
 - **🔧 Modular Architecture**: Blueprint-based Flask application
 - **🐳 Docker Support**: Easy deployment with Docker and docker-compose
-- **🔌 MCP Ready**: Prepared adapter stub for Model Context Protocol integration
+- **🔌 MCP Ready**: Basic structure and UI ready for future Model Context Protocol integration
 
 ## Screenshots
 
@@ -59,11 +59,6 @@ docker-compose --profile mongodb-only up -d  # Solo MongoDB
 docker-compose up news-agent-standalone --build  # Poi l'app
 ```
 
-### Configurazione API Keys (opzionale)
-```bash
-cp env.example .env
-# Modifica .env con le tue chiavi API
-```
 
 ---
 
@@ -90,11 +85,7 @@ cp env.example .env
    pip install -r requirements.txt
    ```
 
-3. **Configure environment**
-   ```bash
-   cp env.example .env
-   # Edit .env with your configuration
-   ```
+
 
 4. **Start MongoDB** (if not using Docker)
    ```bash
@@ -122,36 +113,9 @@ cp env.example .env
 
 ## Configuration
 
-### Environment Variables
-
-Copy `env.example` to `.env` and configure:
-
-```env
-# Flask Configuration
-FLASK_APP=app
-FLASK_ENV=development
-SECRET_KEY=your-secret-key-here
-
-# MongoDB Configuration
-MONGO_URI=mongodb://localhost:27017/news_agent_web
-
-# Ollama Configuration
-OLLAMA_URL=http://localhost:11434
-
-# News Sources Configuration
-DEFAULT_LANGUAGE=it
-ENABLE_MULTILINGUAL=true
-ARTICLES_PER_PAGE=15
-
-# RSS Sources (comma-separated)
-RSS_SOURCES=https://www.ansa.it/sito/ansait_rss.xml,https://www.repubblica.it/rss/homepage/rss2.0.xml
-
-# MCP Configuration (for future use)
-MCP_ENABLED=false
-MCP_SERVER_URL=http://localhost:3000
-```
-
 **Note**: API keys for AI providers (OpenAI, Anthropic, ScrapingDog) are managed through the web interface and stored securely in the MongoDB database. No need to configure them in environment variables.
+
+The application uses sensible defaults for local development. For production deployment, you can configure environment variables as needed.
 
 ## Usage
 
@@ -180,8 +144,9 @@ MCP_SERVER_URL=http://localhost:3000
 ### 4. MCP Integration (Future)
 
 - Access MCP status at `/mcp`
-- Filesystem, HTTP, and search adapters (stub implementation)
-- Ready for Model Context Protocol integration
+- **⚠️ Currently in Development**: Filesystem, HTTP, and search adapters are stub implementations
+- **🔌 Ready for Integration**: Full MCP (Model Context Protocol) support planned for future releases
+- **📋 Current Status**: Basic structure and UI ready, core functionality to be implemented
 
 ## API Endpoints
 
@@ -205,9 +170,9 @@ MCP_SERVER_URL=http://localhost:3000
 
 ### MCP API
 - `GET /mcp/api/status` - Get MCP status
-- `POST /mcp/api/filesystem` - Filesystem operations
-- `POST /mcp/api/http` - HTTP operations
-- `POST /mcp/api/search` - Search operations
+- `POST /mcp/api/filesystem` - Filesystem operations (⚠️ Stub - not yet implemented)
+- `POST /mcp/api/http` - HTTP operations (⚠️ Stub - not yet implemented)
+- `POST /mcp/api/search` - Search operations (⚠️ Stub - not yet implemented)
 
 ## Architecture
 
@@ -218,7 +183,7 @@ news_agent_web/
 │   │   ├── news.py         # News management
 │   │   ├── analysis.py     # Analysis features
 │   │   ├── settings.py     # Configuration
-│   │   └── mcp.py          # MCP adapter
+│   │   └── mcp.py          # MCP adapter (stub implementation)
 │   ├── models/             # MongoDB models
 │   │   ├── article.py      # Article model
 │   │   ├── analysis.py     # Analysis model
@@ -285,3 +250,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Flask**: Web framework
 - **MongoDB**: Database
 - **Ollama**: Local AI inference
+
