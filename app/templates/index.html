@@ -1,0 +1,1039 @@
+{% extends "base/layout.html" %}
+
+{% block title %}News Agent Web - Dashboard{% endblock %}
+
+{% block content %}
+<!-- Professional Tabler Header -->
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <div class="page-pretitle">
+                    SISTEMA DI ANALISI NOTIZIE
+                </div>
+                <h2 class="page-title">
+                    Dashboard Principale
+                </h2>
+                <div class="page-subtitle">
+                    Analisi intelligente delle notizie con AI e scraping avanzato
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- Navigation Menu -->
+        <div class="navbar navbar-expand-md navbar-light d-print-none">
+            <div class="container-xl">
+                <div class="navbar-nav">
+                    <a class="nav-link active" href="#">
+                        <i class="bi bi-house me-2"></i>
+                        Home
+                    </a>
+                    <a class="nav-link" href="/settings">
+                        <i class="bi bi-gear me-2"></i>
+                        Settings
+                    </a>
+                    <a class="nav-link" href="/news">
+                        <i class="bi bi-newspaper me-2"></i>
+                        Articoli
+                    </a>
+                    <a class="nav-link" href="/analysis">
+                        <i class="bi bi-cpu me-2"></i>
+                        Analisi
+                    </a>
+                </div>
+            </div>
+        </div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- System Stats Overview -->
+        <div class="row row-deck row-cards mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="text-muted small text-uppercase fw-bold mb-1">ARTICOLI</div>
+                        <div class="d-flex align-items-center">
+                            <div class="h1 mb-0" id="total-articles">-</div>
+                            <div class="ms-auto">
+                                <div class="text-success fw-bold">75%</div>
+                            </div>
+                        </div>
+                        <div class="text-muted small">Ultimi 7 giorni</div>
+                        <div class="mt-3">
+                            <div class="progress progress-sm">
+                                <div class="progress-bar bg-primary" style="width: 75%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mt-1">
+                                <span>Conversion rate</span>
+                                <span class="text-success">7% <i class="bi bi-graph-up"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="text-muted small text-uppercase fw-bold mb-1">FONTI RSS</div>
+                        <div class="d-flex align-items-center">
+                            <div class="h1 mb-0" id="total-sources">-</div>
+                            <div class="ms-auto">
+                                <div class="text-success fw-bold">8% <i class="bi bi-arrow-up"></i></div>
+                            </div>
+                        </div>
+                        <div class="text-muted small">Ultimi 7 giorni</div>
+                        <div class="mt-3">
+                            <svg class="w-100" style="height: 40px;">
+                                <defs>
+                                    <linearGradient id="gradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#206bc4;stop-opacity:0.3" />
+                                        <stop offset="100%" style="stop-color:#206bc4;stop-opacity:0" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M0,30 Q20,25 40,20 T80,15 T120,10 T160,15 T200,20 T240,15 T280,20 T320,25" 
+                                      fill="none" stroke="#206bc4" stroke-width="2"/>
+                                <path d="M0,30 Q20,25 40,20 T80,15 T120,10 T160,15 T200,20 T240,15 T280,20 T320,25 L320,40 L0,40 Z" 
+                                      fill="url(#gradient1)"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="text-muted small text-uppercase fw-bold mb-1">AI UTILIZZATE</div>
+                        <div class="d-flex align-items-center">
+                            <div class="h1 mb-0" id="ai-used-display">-</div>
+                            <div class="ms-auto">
+                                <div class="text-success fw-bold" id="ai-diversity"><i class="bi bi-robot"></i></div>
+                            </div>
+                        </div>
+                        <div class="text-muted small">Ultimi 7 giorni</div>
+                        <div class="mt-3">
+                            <svg class="w-100" style="height: 40px;">
+                                <defs>
+                                    <linearGradient id="gradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#4299e1;stop-opacity:0.3" />
+                                        <stop offset="100%" style="stop-color:#4299e1;stop-opacity:0" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M0,25 Q20,30 40,28 T80,25 T120,30 T160,25 T200,28 T240,30 T280,25 T320,28" 
+                                      fill="none" stroke="#4299e1" stroke-width="2"/>
+                                <path d="M0,25 Q20,30 40,28 T80,25 T120,30 T160,25 T200,28 T240,30 T280,25 T320,28 L320,40 L0,40 Z" 
+                                      fill="url(#gradient2)"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="text-muted small text-uppercase fw-bold mb-1">ANALISI COMPLETATE</div>
+                        <div class="d-flex align-items-center">
+                            <div class="h1 mb-0" id="total-analysis">-</div>
+                            <div class="ms-auto">
+                                <div class="text-success fw-bold">4% <i class="bi bi-arrow-up"></i></div>
+                            </div>
+                        </div>
+                        <div class="text-muted small">Ultimi 7 giorni</div>
+                        <div class="mt-3">
+                            <div class="d-flex" style="height: 40px; align-items: end;">
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 15px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 25px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 20px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 35px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 30px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 40px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 25px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 35px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 30px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 45px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 35px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 40px;"></div>
+                                <div class="bg-primary rounded me-1" style="width: 8px; height: 30px;"></div>
+                                <div class="bg-primary rounded" style="width: 8px; height: 35px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row row-deck row-cards mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                                                    <i class="bi bi-download text-muted me-2"></i>
+                        Gestione Notizie
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">
+                            Scarica nuove notizie dalle fonti RSS configurate e aggiorna la timeline.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" 
+                                    onclick="downloadNewArticles()">
+                                <span class="spinner-border spinner-border-sm me-2" id="fetch-loading" style="display: none;"></span>
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Scarica Nuove Notizie
+                            </button>
+                            <button class="btn btn-warning" 
+                                    onclick="updateExistingArticles()">
+                                <i class="bi bi-arrow-repeat me-2"></i>
+                                Aggiorna Articoli Esistenti
+                            </button>
+                            <button class="btn btn-danger" 
+                                    onclick="confirmDeleteAllArticles()">
+                                <i class="bi bi-trash me-2"></i>
+                                Cancella Tutti gli Articoli
+                            </button>
+                            <button class="btn btn-info" 
+                                    onclick="debugArticles()">
+                                <i class="bi bi-bug me-2"></i>
+                                Debug Articoli
+                            </button>
+                        </div>
+                        <div id="fetch-result" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                                                    <i class="bi bi-cpu text-muted me-2"></i>
+                        Analisi Rapida
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">
+                            Analizza testo o URL esterni con AI per estrarre informazioni chiave.
+                        </p>
+                        <div class="d-grid">
+                            <button class="btn btn-info" id="analyze-trigger">
+                                <i class="bi bi-cpu me-2"></i>
+                                Analizza Testo/URL
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Articoli -->
+        <div class="row row-deck row-cards">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                                                    <i class="bi bi-list-ul text-muted me-2"></i>
+                        Timeline Articoli
+                        </h3>
+
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="articles-timeline">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Caricamento...</span>
+                                </div>
+                                <p class="text-muted mt-2">Caricamento articoli...</p>
+                            </div>
+                        </div>
+                        
+                        <div id="load-more-indicator" class="text-center py-3" style="display: none;">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Caricamento...</span>
+                            </div>
+                            <span class="ms-2 text-muted">Caricamento altri articoli...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis Modal -->
+<div class="modal modal-blur fade" id="analysis-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-cpu text-info me-2"></i>
+                    Analisi Rapida
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quick-analysis-form">
+                    <div class="mb-3">
+                        <label class="form-label">Testo o URL da analizzare</label>
+                        <textarea class="form-control" id="analysis-input" 
+                                  placeholder="Incolla qui il testo o l'URL da analizzare..."
+                                  rows="4"></textarea>
+                        <div class="form-hint">
+                            Puoi inserire testo libero o URL di articoli web per l'analisi AI.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Provider AI</label>
+                                <select class="form-select" id="analysis-provider">
+                                    <option value="ollama">Ollama (Locale)</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Lingua</label>
+                                <select class="form-select" id="analysis-language">
+                                    <option value="it">Italiano</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-info" id="analyze-btn">
+                            <i class="bi bi-cpu me-1"></i>
+                            Analizza
+                        </button>
+                    </div>
+                </form>
+                <div id="analysis-result" class="mt-4"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+        padding: 2rem 0;
+        margin-bottom: 0;
+    }
+    
+    .page-pretitle {
+        color: #6c757d;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-title {
+        color: #212529;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-subtitle {
+        color: #6c757d;
+        font-size: 1.125rem;
+        margin-bottom: 0;
+    }
+    
+    /* Navigation Menu */
+    .navbar.navbar-light {
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+    
+    .navbar-nav {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .navbar-nav .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        border-radius: 0;
+        margin: 0;
+        transition: all 0.2s ease;
+        border-bottom: 2px solid transparent;
+        position: relative;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        color: #495057;
+        background-color: transparent;
+    }
+    
+    .navbar-nav .nav-link.active {
+        color: #206bc4;
+        background-color: transparent;
+        border-bottom: 2px solid #206bc4;
+    }
+    
+    .navbar-nav .nav-link i {
+        font-size: 1.1rem;
+    }
+    
+    /* Stats Cards */
+    .card-sm {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .card-sm:hover {
+        border-color: #206bc4;
+        box-shadow: 0 4px 12px rgba(32,107,196,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .font-weight-medium {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #212529;
+        line-height: 1.2;
+    }
+    
+    .progress-sm {
+        height: 0.375rem;
+        border-radius: 0.25rem;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, #206bc4 0%, #4299e1 100%);
+    }
+    
+    .display-6 {
+        font-size: 2.5rem;
+        font-weight: 600;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .form-hint {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    /* Timeline styling */
+    #articles-timeline {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 0;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+    }
+    
+    .article-item {
+        background: white;
+        border: 1px solid #206bc4;
+        border-radius: 6px;
+        padding: 1rem;
+        margin: 0.75rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    .article-item:hover {
+        border-color: #1a5490;
+        box-shadow: 0 4px 12px rgba(32,107,196,0.15);
+        transform: translateY(-2px);
+    }
+    
+    .article-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+    
+    .source-name {
+        background-color: #ff8c00;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 1px 3px rgba(255,140,0,0.3);
+    }
+    
+    .article-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #206bc4;
+        line-height: 1.3;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .article-title:hover {
+        color: #1a5490;
+        text-decoration: underline;
+    }
+    
+    .article-summary {
+        color: #495057;
+        font-size: 0.875rem;
+        line-height: 1.4;
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .article-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+    
+    .btn-examine {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+    }
+    
+    .btn-examine:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(40,167,69,0.3);
+    }
+</style>
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardStats();
+        loadTimeline();
+        setupModal();
+    });
+    
+    function loadDashboardStats() {
+        // Load total articles count
+        console.log('🔄 Caricamento statistiche dashboard...');
+        fetch('/news/api/stats')
+            .then(function(response) { 
+                console.log('📡 Risposta ricevuta:', response.status, response.statusText);
+                return response.json(); 
+            })
+            .then(function(data) {
+                console.log('📊 Dati ricevuti:', data);
+                if (data.success) {
+                    document.getElementById('total-articles').textContent = data.stats.total_articles || 0;
+                    document.getElementById('total-sources').textContent = data.stats.total_sources || 0;
+                    const aiUsedCount = data.stats.ai_used_count || 0;
+                    document.getElementById('ai-used-display').textContent = aiUsedCount;
+                    
+                    // Update AI diversity icon based on count
+                    const aiDiversityEl = document.getElementById('ai-diversity');
+                    if (aiUsedCount === 0) {
+                        aiDiversityEl.innerHTML = '<i class="bi bi-dash"></i>';
+                        aiDiversityEl.className = 'text-muted fw-bold';
+                    } else if (aiUsedCount === 1) {
+                        aiDiversityEl.innerHTML = '<i class="bi bi-robot"></i>';
+                        aiDiversityEl.className = 'text-warning fw-bold';
+                    } else if (aiUsedCount >= 2) {
+                        aiDiversityEl.innerHTML = '<i class="bi bi-stars"></i>';
+                        aiDiversityEl.className = 'text-success fw-bold';
+                    }
+                    document.getElementById('total-analysis').textContent = data.stats.total_analysis || 0;
+                }
+            })
+            .catch(function(error) {
+                console.error('❌ ERRORE caricamento statistiche:', error);
+                console.error('❌ Dettagli errore:', error.message);
+                // Set default values on error
+                document.getElementById('total-articles').textContent = '0';
+                document.getElementById('total-sources').textContent = '0';
+                document.getElementById('ai-used-display').textContent = '0';
+                document.getElementById('total-analysis').textContent = '0';
+            });
+    }
+    
+    function setupModal() {
+        var modal = document.getElementById('analysis-modal');
+        var trigger = document.getElementById('analyze-trigger');
+        var form = document.getElementById('quick-analysis-form');
+        
+        // Open modal
+        trigger.addEventListener('click', function() {
+            var modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+        });
+        
+        // Handle form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var input = document.getElementById('analysis-input').value.trim();
+            if (input) {
+                analyzeText(input);
+            }
+        });
+        
+        // Reset form and clear results when modal is hidden
+        modal.addEventListener('hidden.bs.modal', function() {
+            // Reset form
+            form.reset();
+            
+            // Clear analysis results
+            var resultDiv = document.getElementById('analysis-result');
+            if (resultDiv) {
+                resultDiv.innerHTML = '';
+            }
+            
+            // Reset button state
+            var analyzeBtn = document.getElementById('analyze-btn');
+            if (analyzeBtn) {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="bi bi-cpu me-1"></i>Analizza';
+            }
+            
+            console.log('✅ Modal reset completato');
+        });
+        
+        // Also handle escape key and backdrop click
+        modal.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }
+        });
+        
+        // Handle backdrop click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                var modalInstance = bootstrap.Modal.getInstance(modal);
+                var backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop && backdrop.parentNode) {
+                    backdrop.parentNode.removeChild(backdrop);
+                }
+            }
+        });
+        
+        // Force cleanup on any modal close event
+        var events = ['hide.bs.modal', 'hidden.bs.modal'];
+        for (var i = 0; i < events.length; i++) {
+            var event = events[i];
+            modal.addEventListener(event, function() {
+                // Ensure form is reset
+                if (form) form.reset();
+                
+                // Clear results
+                var resultDiv = document.getElementById('analysis-result');
+                if (resultDiv) resultDiv.innerHTML = '';
+                
+                // Reset button
+                var analyzeBtn = document.getElementById('analyze-btn');
+                if (analyzeBtn) {
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.innerHTML = '<i class="bi bi-cpu me-1"></i>Analizza';
+                }
+            });
+        }
+    }
+    
+    function loadTimeline() {
+        console.log('🔄 Caricamento timeline...');
+        var timelineContainer = document.getElementById('articles-timeline');
+        
+        if (!timelineContainer) {
+            console.error('❌ Container timeline non trovato!');
+            return;
+        }
+        
+        // Mostra indicatore di caricamento
+        timelineContainer.innerHTML = 
+            '<div class="text-center py-4">' +
+                '<div class="spinner-border text-primary" role="status">' +
+                    '<span class="visually-hidden">Caricamento...</span>' +
+                '</div>' +
+                '<p class="mt-2 text-muted">Caricamento articoli...</p>' +
+            '</div>';
+        
+        fetch('/news/timeline')
+            .then(function(response) {
+                console.log('📡 Risposta timeline:', response.status, response.statusText);
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                }
+                return response.text();
+            })
+            .then(function(html) {
+                console.log('✅ HTML ricevuto, lunghezza:', html.length);
+                console.log('📄 Primi 200 caratteri:', html.substring(0, 200));
+                
+                timelineContainer.innerHTML = html;
+                setupInfiniteScroll();
+                
+                // Controlla se ci sono articoli
+                var articleItems = timelineContainer.querySelectorAll('.article-item');
+                console.log('📰 Articoli trovati nel DOM:', articleItems.length);
+            })
+            .catch(function(error) {
+                console.error('❌ Errore caricamento timeline:', error);
+                timelineContainer.innerHTML = 
+                    '<div class="alert alert-danger m-3">' +
+                        '<i class="bi bi-exclamation-triangle me-2"></i>' +
+                        'Errore nel caricamento: ' + error.message +
+                    '</div>';
+            });
+    }
+    
+    function setupInfiniteScroll() {
+        var timelineContainer = document.getElementById('articles-timeline');
+        var scrollObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    var trigger = entry.target;
+                    var offset = parseInt(trigger.dataset.offset);
+                    
+                    console.log('Scroll trigger hit, offset:', offset);
+                    
+                    if (offset >= 0) {
+                        loadMoreArticles(offset);
+                        trigger.remove();
+                    }
+                }
+            });
+        }, { 
+            root: timelineContainer,
+            rootMargin: '50px',
+            threshold: 0.1
+        });
+        
+        var triggers = document.querySelectorAll('#scroll-trigger');
+        for (var i = 0; i < triggers.length; i++) {
+            var trigger = triggers[i];
+            scrollObserver.observe(trigger);
+            console.log('Observing trigger with offset:', trigger.dataset.offset);
+        }
+    }
+    
+        function analyzeText(text) {
+        console.log('🚀 Avvio analisi testo/URL:', text.substring(0, 100) + '...');
+        console.log('📏 Lunghezza testo:', text.length);
+        
+        // Get form values
+        var provider = document.getElementById('analysis-provider').value;
+        var language = document.getElementById('analysis-language').value;
+        
+        console.log('🤖 Provider selezionato:', provider);
+        console.log('🌍 Lingua selezionata:', language);
+        
+        // Disable button and show loading
+        var analyzeBtn = document.getElementById('analyze-btn');
+        var originalBtnText = analyzeBtn.innerHTML;
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Analizzando...';
+        
+        // Show loading in results area
+        var resultDiv = document.getElementById('analysis-result');
+        resultDiv.innerHTML = `
+            <div class="text-center p-4">
+                <div class="spinner-border text-info mb-3" role="status">
+                    <span class="visually-hidden">Caricamento...</span>
+                </div>
+                <p class="text-muted">Analisi in corso...</p>
+            </div>
+        `;
+        
+        // Determine if it's a URL or text
+        var isUrl = text.startsWith('http://') || text.startsWith('https://');
+        var endpoint = isUrl ? '/analysis/api/analyze-url' : '/analysis/api/analyze-text';
+        
+        // Prepare request body
+        var requestBody = {
+            provider: provider,
+            language: language
+        };
+        
+        if (isUrl) {
+            requestBody.url = text;
+        } else {
+            requestBody.text = text;
+            requestBody.title = 'Testo personalizzato';
+        }
+        
+        // Make API call
+        console.log('🔗 Chiamata API:', endpoint);
+        console.log('📦 Dati inviati:', requestBody);
+        
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            console.log('✅ Risposta analisi:', data);
+            
+            if (data.success) {
+                // Show success and redirect to analysis page
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Analisi completata!</strong> Reindirizzamento alla pagina dei risultati...
+                    </div>
+                `;
+                
+                // Redirect to analysis result page
+                setTimeout(function() {
+                    window.location.href = '/analysis/result/' + data.analysis_id;
+                }, 2000);
+                
+            } else {
+                throw new Error(data.error || 'Errore sconosciuto');
+            }
+        })
+        .catch(function(error) {
+            console.error('❌ Errore analisi:', error);
+            
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Errore:</strong> ${error.message}
+                </div>
+            `;
+            
+            // Reset button
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = originalBtnText;
+        });
+    }
+    
+    function getSentimentColor(sentiment) {
+        switch(sentiment.toLowerCase()) {
+            case 'positive': return 'success';
+            case 'negative': return 'danger';
+            case 'neutral': return 'secondary';
+            default: return 'info';
+        }
+    }
+    
+    function loadMoreArticles(offset) {
+        var loadMoreIndicator = document.getElementById('load-more-indicator');
+        if (loadMoreIndicator) loadMoreIndicator.style.display = 'block';
+        
+        fetch('/news/timeline/more?offset=' + offset)
+            .then(function(response) { return response.text(); })
+            .then(function(html) {
+                var timelineContainer = document.getElementById('articles-timeline');
+                timelineContainer.insertAdjacentHTML('beforeend', html);
+                setupInfiniteScroll();
+                console.log('Loaded more articles, new offset will be:', offset + 4);
+            })
+            .catch(function(error) {
+                console.error('Error loading more articles:', error);
+                var timelineContainer = document.getElementById('articles-timeline');
+                timelineContainer.insertAdjacentHTML('beforeend', 
+                    '<div class="alert alert-danger m-3">' +
+                        '<i class="bi bi-exclamation-triangle me-2"></i>' +
+                        'Errore nel caricamento: ' + error.message +
+                    '</div>'
+                );
+            })
+            .finally(function() {
+                if (loadMoreIndicator) loadMoreIndicator.style.display = 'none';
+            });
+    }
+    
+    function confirmDeleteAllArticles() {
+        if (confirm('⚠️ ATTENZIONE: Stai per eliminare TUTTI gli articoli dal database!\n\nQuesta azione è irreversibile e eliminerà anche tutte le analisi associate.\n\nSei sicuro di voler continuare?')) {
+            deleteAllArticles();
+        }
+    }
+    
+    function deleteAllArticles() {
+        // Mostra messaggio di stato
+        const resultDiv = document.getElementById('fetch-result');
+        resultDiv.innerHTML = '<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Eliminazione articoli in corso...</div>';
+        
+        fetch('/analysis/api/articles/delete-all', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                // Mostra messaggio di successo temporaneo
+                resultDiv.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>' + data.message + '</div>';
+                
+                // Ricarica la timeline dopo l'eliminazione
+                setTimeout(function() {
+                    loadTimeline();
+                    // Nascondi il messaggio dopo 3 secondi
+                    setTimeout(function() {
+                        resultDiv.innerHTML = '';
+                    }, 3000);
+                }, 1000);
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Errore: ' + data.error + '</div>';
+            }
+        })
+        .catch(function(error) {
+            console.error('Errore eliminazione articoli:', error);
+            resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Errore di connessione: ' + error.message + '</div>';
+        });
+    }
+    
+    function updateExistingArticles() {
+        if (confirm('🔄 Aggiorna gli articoli esistenti?\n\nQuesto controllerà le fonti RSS per aggiornamenti senza creare duplicati.')) {
+            updateArticlesWithoutDuplicates();
+        }
+    }
+    
+    function downloadNewArticles() {
+        // Mostra indicatore di caricamento
+        const downloadBtn = document.querySelector('button[onclick="downloadNewArticles()"]');
+        const originalText = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Download...';
+        downloadBtn.disabled = true;
+        
+        // Mostra messaggio di stato
+        const resultDiv = document.getElementById('fetch-result');
+        resultDiv.innerHTML = '<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Scaricamento articoli dalle fonti RSS...</div>';
+        
+        fetch('/news/fetch')
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                // Mostra messaggio di successo temporaneo
+                resultDiv.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>' + data.message + '</div>';
+                
+                // Ricarica la timeline per mostrare i nuovi articoli
+                setTimeout(function() {
+                    loadTimeline();
+                    // Nascondi il messaggio dopo 3 secondi
+                    setTimeout(function() {
+                        resultDiv.innerHTML = '';
+                    }, 3000);
+                }, 1000);
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Errore: ' + data.error + '</div>';
+            }
+        })
+        .catch(function(error) {
+            console.error('Errore download articoli:', error);
+            resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Errore di connessione: ' + error.message + '</div>';
+        })
+        .finally(function() {
+            // Ripristina il pulsante
+            downloadBtn.innerHTML = originalText;
+            downloadBtn.disabled = false;
+        });
+    }
+    
+    function updateArticlesWithoutDuplicates() {
+        // Mostra indicatore di caricamento
+        const updateBtn = document.querySelector('button[onclick="updateExistingArticles()"]');
+        const originalText = updateBtn.innerHTML;
+        updateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Aggiornamento...';
+        updateBtn.disabled = true;
+        
+        // Mostra messaggio di stato
+        const resultDiv = document.getElementById('fetch-result');
+        resultDiv.innerHTML = '<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Aggiornamento articoli esistenti...</div>';
+        
+        fetch('/news/update-existing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                // Mostra messaggio di successo temporaneo
+                resultDiv.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>' + data.message + '</div>';
+                
+                // Ricarica la timeline per mostrare i nuovi articoli
+                setTimeout(function() {
+                    loadTimeline();
+                    // Nascondi il messaggio dopo 3 secondi
+                    setTimeout(function() {
+                        resultDiv.innerHTML = '';
+                    }, 3000);
+                }, 1000);
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Errore: ' + data.error + '</div>';
+            }
+        })
+        .catch(function(error) {
+            console.error('Errore aggiornamento articoli:', error);
+            resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Errore di connessione: ' + error.message + '</div>';
+        })
+        .finally(function() {
+            // Ripristina il pulsante
+            updateBtn.innerHTML = originalText;
+            updateBtn.disabled = false;
+        });
+    }
+    
+    function debugArticles() {
+        console.log('Debug articoli...');
+        var resultDiv = document.getElementById('fetch-result');
+        resultDiv.innerHTML = '<div class="alert alert-info">Controllo database articoli...</div>';
+        
+        fetch('/news/api/debug/articles')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            console.log('Debug data:', data);
+            
+            if (data.total_count === 0) {
+                resultDiv.innerHTML = '<div class="alert alert-warning"><strong>Database vuoto!</strong><br>Non ci sono articoli nel database.<br>Usa "Scarica Nuove Notizie" per iniziare.</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-success"><strong>Database OK!</strong><br>Articoli trovati: ' + data.total_count + '<br>Database: ' + data.database_name + '<br>Collection: ' + data.collection_name + '</div>';
+            }
+        })
+        .catch(function(error) {
+            console.error('Errore debug articoli:', error);
+            resultDiv.innerHTML = '<div class="alert alert-danger"><strong>Errore debug:</strong><br>' + error.message + '</div>';
+        });
+    }
+</script>
+{% endblock %}
+{% endblock %}

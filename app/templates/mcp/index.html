@@ -1,0 +1,203 @@
+{% extends "base/layout.html" %}
+
+{% block title %}MCP Adapter - News Agent Web{% endblock %}
+{% block page_title %}🔌 MCP Adapter{% endblock %}
+
+{% block content %}
+<!-- Navigation Menu -->
+<div class="navbar navbar-expand-md navbar-light d-print-none">
+    <div class="container-xl">
+        <div class="navbar-nav">
+            <a class="nav-link" href="/">
+                <i class="bi bi-house me-2"></i>
+                Home
+            </a>
+            <a class="nav-link" href="/settings">
+                <i class="bi bi-gear me-2"></i>
+                Settings
+            </a>
+            <a class="nav-link" href="/news">
+                <i class="bi bi-newspaper me-2"></i>
+                Articoli
+            </a>
+            <a class="nav-link" href="/analysis">
+                <i class="bi bi-cpu me-2"></i>
+                Analisi
+            </a>
+            <a class="nav-link active" href="/mcp">
+                <i class="bi bi-plug me-2"></i>
+                MCP
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Status Card -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Stato MCP Adapter</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Stato</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-circle-fill text-{{ 'success' if mcp_config.enabled else 'danger' }}"></i>
+                                        </span>
+                                        <input type="text" class="form-control" value="{{ 'Attivo' if mcp_config.enabled else 'Disabilitato' }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Server URL</label>
+                                    <input type="text" class="form-control" value="{{ mcp_config.server_url }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button class="btn btn-primary" hx-get="/mcp/api/status" hx-target="#mcp-status">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Aggiorna Stato
+                            </button>
+                        </div>
+                        
+                        <div id="mcp-status">
+                            <!-- Status will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Capabilities Cards -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-folder me-2"></i>
+                            Filesystem
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Operazioni sui file e directory</p>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success me-2"></i>Lista file</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Lettura file</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Scrittura file</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Eliminazione file</li>
+                        </ul>
+                        <button class="btn btn-outline-primary btn-sm" hx-post="/mcp/api/filesystem" 
+                                hx-vals='{"operation": "list"}' hx-target="#filesystem-result">
+                            Test Lista
+                        </button>
+                        <div id="filesystem-result" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-globe me-2"></i>
+                            HTTP
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Richieste HTTP e API</p>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success me-2"></i>GET</li>
+                            <li><i class="bi bi-check text-success me-2"></i>POST</li>
+                            <li><i class="bi bi-check text-success me-2"></i>PUT</li>
+                            <li><i class="bi bi-check text-success me-2"></i>DELETE</li>
+                        </ul>
+                        <button class="btn btn-outline-primary btn-sm" hx-post="/mcp/api/http" 
+                                hx-vals='{"method": "GET", "url": "https://httpbin.org/get"}' hx-target="#http-result">
+                            Test HTTP
+                        </button>
+                        <div id="http-result" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-search me-2"></i>
+                            Ricerca
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Motori di ricerca e verifica</p>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success me-2"></i>Web</li>
+                            <li><i class="bi bi-check text-success me-2"></i>News</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Accademico</li>
+                        </ul>
+                        <button class="btn btn-outline-primary btn-sm" hx-post="/mcp/api/search" 
+                                hx-vals='{"query": "test query"}' hx-target="#search-result">
+                            Test Ricerca
+                        </button>
+                        <div id="search-result" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Info -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Configurazione MCP</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h4 class="alert-heading">Informazioni</h4>
+                            <p>L'MCP (Model Context Protocol) Adapter è attualmente in modalità <strong>stub</strong>.</p>
+                            <p>Le funzionalità reali saranno implementate in futuro per integrare strumenti esterni come:</p>
+                            <ul>
+                                <li>Ricerca web avanzata</li>
+                                <li>Accesso al filesystem</li>
+                                <li>Chiamate HTTP personalizzate</li>
+                                <li>Integrazione con database esterni</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button class="btn btn-info" hx-get="/mcp/api/capabilities" hx-target="#capabilities-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Mostra Capacità Dettagliate
+                            </button>
+                        </div>
+                        
+                        <div id="capabilities-info"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh status every 30 seconds
+setInterval(function() {
+    htmx.ajax('GET', '/mcp/api/status', {target: '#mcp-status'});
+}, 30000);
+
+// Initial load
+document.addEventListener('DOMContentLoaded', function() {
+    htmx.ajax('GET', '/mcp/api/status', {target: '#mcp-status'});
+});
+</script>
+{% endblock %}

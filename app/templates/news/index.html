@@ -1,0 +1,512 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Notizie - News Agent Web{% endblock %}
+{% block page_title %}📰 Ultime Notizie{% endblock %}
+
+{% block page_actions %}
+<div class="page-header mt-3">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col">
+                <h2 class="page-title">
+                    📰 Ultime Notizie
+                </h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <div class="btn-list">
+                    <button class="btn btn-primary" 
+                            hx-get="/news/fetch" 
+                            hx-target="#news-container"
+                            hx-indicator="#fetch-loading">
+                        <span class="loading-spinner spinner-border spinner-border-sm me-2" id="fetch-loading"></span>
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Aggiorna
+                    </button>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" id="filters-dropdown">
+            <i class="bi bi-funnel me-1"></i>
+            Filtri
+            {% if source_filter %}
+            <span class="badge bg-primary ms-1">{{ source_filter[:10] }}{% if source_filter|length > 10 %}...{% endif %}</span>
+            {% endif %}
+        </button>
+        <div class="dropdown-menu" style="min-width: 250px;">
+            <!-- Filtro Lingua -->
+            <h6 class="dropdown-header">
+                <i class="bi bi-translate me-1"></i>
+                Lingua
+            </h6>
+            <a class="dropdown-item {% if language == 'it' %}active{% endif %}" href="?language=it{% if source_filter %}&source={{ source_filter }}{% endif %}">
+                <i class="bi bi-flag me-2"></i>
+                Italiano
+            </a>
+            <a class="dropdown-item {% if language == 'en' %}active{% endif %}" href="?language=en{% if source_filter %}&source={{ source_filter }}{% endif %}">
+                <i class="bi bi-flag me-2"></i>
+                English
+            </a>
+            
+            <div class="dropdown-divider"></div>
+            
+            <!-- Filtro Fonte -->
+            <h6 class="dropdown-header">
+                <i class="bi bi-building me-1"></i>
+                Fonte
+            </h6>
+            <a class="dropdown-item {% if not source_filter %}active{% endif %}" href="?language={{ language }}">
+                <i class="bi bi-globe me-2"></i>
+                <strong>Tutte le fonti</strong>
+            </a>
+            <div id="sources-list">
+                <!-- Fonti caricate dal server -->
+                {% if available_sources %}
+                    {% for source in available_sources %}
+                    <a class="dropdown-item {% if source_filter == source.name %}active{% endif %}" 
+                       href="?language={{ language }}&source={{ source.name|urlencode }}">
+                        <i class="{% if 'ansa' in source.name.lower() %}bi-newspaper{% elif 'repubblica' in source.name.lower() %}bi-journal-text{% elif 'corriere' in source.name.lower() %}bi-file-text{% elif 'sole24ore' in source.name.lower() or 'sole 24' in source.name.lower() %}bi-graph-up{% elif 'open' in source.name.lower() %}bi-megaphone{% elif 'bbc' in source.name.lower() %}bi-broadcast{% else %}bi-building{% endif %} me-2"></i>
+                        {{ source.display_name }}
+                        <span class="badge bg-secondary ms-auto">{{ source.count }}</span>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="dropdown-item-text text-muted">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Nessuna fonte disponibile
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <!-- Reset Filtri -->
+            {% if source_filter %}
+            <a class="dropdown-item text-danger" href="?language={{ language }}">
+                <i class="bi bi-x-circle me-2"></i>
+                Rimuovi filtri
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <button class="btn btn-danger" onclick="confirmDeleteAllArticles()">
+        <i class="bi bi-trash me-1"></i>
+        Elimina Tutti gli Articoli
+    </button>
+                    <button class="btn btn-warning" onclick="cleanupDuplicates()">
+                        <i class="bi bi-broom me-1"></i>
+                        Pulizia Duplicati
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation Menu -->
+<div class="navbar navbar-expand-md navbar-light d-print-none mb-0">
+    <div class="container-xl">
+        <div class="navbar-nav">
+            <a class="nav-link" href="/">
+                <i class="bi bi-house me-2"></i>
+                Home
+            </a>
+            <a class="nav-link" href="/settings">
+                <i class="bi bi-gear me-2"></i>
+                Settings
+            </a>
+            <a class="nav-link active" href="/news">
+                <i class="bi bi-newspaper me-2"></i>
+                Articoli
+            </a>
+            <a class="nav-link" href="/analysis">
+                <i class="bi bi-cpu me-2"></i>
+                Analisi
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Indicatore filtro attivo -->
+{% if source_filter %}
+<div class="alert alert-info mb-3">
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <i class="bi bi-funnel me-2"></i>
+            <strong>Filtro attivo:</strong> Mostrando <strong>tutti i {{ articles|length }} articoli</strong> di <strong>{{ source_filter }}</strong> <em>(tutte le lingue)</em>
+        </div>
+        <a href="?language={{ language }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-x me-1"></i>
+            Rimuovi filtro
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div id="news-container" class="mt-2">
+    {% if articles %}
+        <div class="row row-cards">
+            {% for article in articles %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card news-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2">{{ article.source }}</span>
+                            {% if article.published_date %}
+                            <small class="text-muted">{{ article.published_date.strftime('%d/%m/%Y') }}</small>
+                            {% endif %}
+                        </div>
+                        
+                        <h3 class="card-title">
+                            <a href="{{ article.link }}" target="_blank" class="text-decoration-none">
+                                {{ article.title }}
+                            </a>
+                        </h3>
+                        
+                        {% if article.summary %}
+                        <p class="card-text text-muted">
+                            {{ article.summary[:150] }}{% if article.summary|length > 150 %}...{% endif %}
+                        </p>
+                        {% endif %}
+                        
+                        {% if article.author %}
+                        <div class="text-muted mb-3">
+                            <i class="bi bi-person me-1"></i>
+                            {{ article.author }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="btn-group w-100">
+                            <a href="{{ article.link }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>
+                                Leggi
+                            </a>
+                            <button class="btn btn-outline-success btn-sm"
+                                    hx-get="/analysis/article/{{ article.id }}"
+                                    hx-target="#modal-content"
+                                    hx-trigger="click"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#analysis-modal">
+                                <i class="bi bi-cpu me-1"></i>
+                                Analizza
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination - Solo se NON c'è filtro per fonte -->
+        {% if not source_filter %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav>
+                <ul class="pagination">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page - 1 }}&per_page={{ per_page }}&language={{ language }}">
+                            <i class="bi bi-chevron-left"></i>
+                            Precedente
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">{{ page }}</span>
+                    </li>
+                    
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page + 1 }}&per_page={{ per_page }}&language={{ language }}">
+                            Successiva
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="empty">
+            <div class="empty-img">
+                <i class="bi bi-newspaper" style="font-size: 4rem; color: #ccc;"></i>
+            </div>
+            <p class="empty-title">Nessuna notizia disponibile</p>
+            <p class="empty-subtitle text-muted">
+                Clicca su "Aggiorna" per caricare le ultime notizie dai feed RSS.
+            </p>
+            <div class="empty-action">
+                <button class="btn btn-primary" 
+                        hx-get="/news/fetch" 
+                        hx-target="#news-container"
+                        hx-indicator="#fetch-loading">
+                    <span class="loading-spinner spinner-border spinner-border-sm me-2" id="fetch-loading"></span>
+                    <i class="bi bi-arrow-clockwise me-1"></i>
+                    Carica Notizie
+                </button>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Analysis Modal -->
+<div class="modal modal-blur fade" id="analysis-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Analisi Critica</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Content will be loaded here via HTMX -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Smart auto-refresh with duplicate prevention
+    let autoRefreshInterval;
+    let lastRefreshTime = Date.now();
+    const REFRESH_INTERVAL = 600000; // 10 minutes instead of 5
+    const MIN_REFRESH_GAP = 900000; // 15 minutes minimum between refreshes
+    const MAX_ARTICLES_THRESHOLD = 1000; // Skip refresh if too many articles
+    
+    function startSmartAutoRefresh() {
+        console.log('🔄 Avvio auto-refresh intelligente (ogni 10 minuti)');
+        
+        autoRefreshInterval = setInterval(function() {
+            console.log('⏰ Controllo auto-refresh programmato...');
+            
+            const now = Date.now();
+            const timeSinceLastRefresh = now - lastRefreshTime;
+            
+            // Controlla se è passato abbastanza tempo dall'ultimo refresh
+            if (timeSinceLastRefresh < MIN_REFRESH_GAP) {
+                console.log(`⏳ Troppo presto per refresh (${Math.round(timeSinceLastRefresh/1000)}s fa), salto...`);
+                return;
+            }
+            
+            // Controlla se ci sono articoli recenti nel database
+            checkRecentArticlesAndRefresh();
+            
+        }, REFRESH_INTERVAL);
+        
+        // Mostra il prossimo aggiornamento programmato
+        updateNextRefreshDisplay();
+    }
+    
+    function checkRecentArticlesAndRefresh() {
+        console.log('🔍 Controllo articoli recenti prima dell\'auto-refresh...');
+        
+        fetch('/news/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const totalArticles = data.stats.total_articles || 0;
+                    console.log(`📊 Articoli totali nel database: ${totalArticles}`);
+                    
+                    // Skip refresh if too many articles already
+                    if (totalArticles > MAX_ARTICLES_THRESHOLD) {
+                        console.log(`📚 Database già popolato (${totalArticles} articoli), salto auto-refresh`);
+                        updateNextRefreshDisplay('Database popolato, aggiornamento saltato');
+                        return;
+                    }
+                    
+                    if (totalArticles === 0) {
+                        console.log('📭 Database vuoto, eseguo refresh automatico...');
+                        executeAutoRefresh();
+                    } else {
+                        // Controlla se ci sono articoli molto recenti (ultimi 30 minuti invece di 15)
+                        checkArticlesRecency();
+                    }
+                } else {
+                    console.log('⚠️ Errore nel controllo statistiche, salto auto-refresh');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Errore controllo statistiche:', error);
+            });
+    }
+    
+    function checkArticlesRecency() {
+        // Controlla gli articoli più recenti per vedere se sono troppo recenti
+        fetch('/news/api/articles?limit=5')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.articles && data.articles.length > 0) {
+                    const mostRecentArticle = data.articles[0];
+                    const articleDate = new Date(mostRecentArticle.created_at);
+                    const now = new Date();
+                    const timeDiff = now - articleDate;
+                    const minutesDiff = Math.round(timeDiff / 60000);
+                    
+                    console.log(`📰 Articolo più recente: ${mostRecentArticle.title.substring(0, 50)}...`);
+                    console.log(`⏰ Creato ${minutesDiff} minuti fa`);
+                    
+                    // Aumenta il controllo da 15 a 30 minuti
+                    if (minutesDiff < 30) {
+                        console.log('⏳ Articoli troppo recenti (< 30 min), salto auto-refresh');
+                        updateNextRefreshDisplay('Articoli recenti, aggiornamento saltato');
+                    } else {
+                        console.log('✅ Articoli non troppo recenti, eseguo auto-refresh...');
+                        executeAutoRefresh();
+                    }
+                } else {
+                    console.log('📭 Nessun articolo trovato, eseguo auto-refresh...');
+                    executeAutoRefresh();
+                }
+            })
+            .catch(error => {
+                console.error('❌ Errore controllo recency articoli:', error);
+                // In caso di errore, esegui comunque il refresh
+                executeAutoRefresh();
+            });
+    }
+    
+    function executeAutoRefresh() {
+        console.log('🚀 Esecuzione auto-refresh intelligente...');
+        
+        // Mostra indicatore di auto-refresh
+        showAutoRefreshIndicator();
+        
+        // Esegui il refresh
+        htmx.ajax('GET', '/news/fetch', {
+            target: '#news-container',
+            headers: {
+                'X-Auto-Refresh': 'true'
+            }
+        }).then(() => {
+            console.log('✅ Auto-refresh completato');
+            lastRefreshTime = Date.now();
+            updateNextRefreshDisplay();
+            hideAutoRefreshIndicator();
+        }).catch(error => {
+            console.error('❌ Errore auto-refresh:', error);
+            hideAutoRefreshIndicator();
+        });
+    }
+    
+    function showAutoRefreshIndicator() {
+        // Crea o mostra indicatore di auto-refresh
+        let indicator = document.getElementById('auto-refresh-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'auto-refresh-indicator';
+            indicator.className = 'alert alert-info alert-sm position-fixed';
+            indicator.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+            indicator.innerHTML = `
+                <i class="bi bi-arrow-clockwise me-2"></i>
+                <strong>Auto-refresh in corso...</strong><br>
+                <small class="text-muted">Aggiornamento automatico degli articoli</small>
+            `;
+            document.body.appendChild(indicator);
+        }
+        indicator.style.display = 'block';
+    }
+    
+    function hideAutoRefreshIndicator() {
+        const indicator = document.getElementById('auto-refresh-indicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+    
+    function updateNextRefreshDisplay(message = null) {
+        const nextRefresh = new Date(Date.now() + REFRESH_INTERVAL);
+        const timeString = nextRefresh.toLocaleTimeString('it-IT', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        if (message) {
+            console.log(`⏰ Prossimo aggiornamento: ${timeString} - ${message}`);
+        } else {
+            console.log(`⏰ Prossimo aggiornamento programmato: ${timeString}`);
+        }
+    }
+    
+    // Avvia auto-refresh intelligente quando la pagina si carica
+    document.addEventListener('DOMContentLoaded', function() {
+        startSmartAutoRefresh();
+    });
+    
+    // Pulisci l'intervallo quando la pagina viene chiusa
+    window.addEventListener('beforeunload', function() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    });
+
+    function confirmDeleteAllArticles() {
+        if (confirm('⚠️ ATTENZIONE: Stai per eliminare TUTTI gli articoli dal database!\n\nQuesta azione è irreversibile e eliminerà anche tutte le analisi associate.\n\nSei sicuro di voler continuare?')) {
+            deleteAllArticles();
+        }
+    }
+    
+    function deleteAllArticles() {
+        fetch('/analysis/api/articles/delete-all', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`✅ ${data.message}`);
+                // Ricarica la pagina dopo l'eliminazione
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                alert('❌ Errore nell\'eliminazione: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Errore eliminazione articoli:', error);
+            alert('❌ Errore di connessione durante l\'eliminazione');
+        });
+    }
+    
+    function cleanupDuplicates() {
+        if (confirm('🧹 Vuoi pulire i duplicati dal database?\n\nQuesto processo rimuoverà articoli duplicati mantenendo solo le versioni più recenti.')) {
+            // Mostra indicatore di caricamento
+            const cleanupBtn = document.querySelector('button[onclick="cleanupDuplicates()"]');
+            const originalText = cleanupBtn.innerHTML;
+            cleanupBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Pulizia...';
+            cleanupBtn.disabled = true;
+            
+            fetch('/news/api/cleanup-duplicates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ ${data.message}\n\nDuplicati rimossi: ${data.duplicates_removed}\nArticoli rimanenti: ${data.total_articles}`);
+                    // Ricarica la pagina per mostrare i risultati
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    alert('❌ Errore nella pulizia: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Errore pulizia duplicati:', error);
+                alert('❌ Errore di connessione durante la pulizia');
+            })
+            .finally(() => {
+                // Ripristina il pulsante
+                cleanupBtn.innerHTML = originalText;
+                cleanupBtn.disabled = false;
+            });
+        }
+    }
+</script>
+{% endblock %}

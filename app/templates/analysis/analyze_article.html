@@ -1,0 +1,96 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Analizza Articolo - News Agent Web{% endblock %}
+{% block page_title %}🧠 Analizza Articolo{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ article.title }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4>Dettagli Articolo</h4>
+                        <div class="mb-3">
+                            <strong>Fonte:</strong> {{ article.source }}
+                        </div>
+                        {% if article.author %}
+                        <div class="mb-3">
+                            <strong>Autore:</strong> {{ article.author }}
+                        </div>
+                        {% endif %}
+                        {% if article.published_date %}
+                        <div class="mb-3">
+                            <strong>Data:</strong> {{ article.published_date.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                        {% endif %}
+                        <div class="mb-3">
+                            <strong>Link:</strong> 
+                            <a href="{{ article.link }}" target="_blank">{{ article.link }}</a>
+                        </div>
+                        
+                        {% if article.summary %}
+                        <div class="mb-3">
+                            <strong>Riassunto:</strong>
+                            <p class="text-muted">{{ article.summary }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if article.content %}
+                        <div class="mb-3">
+                            <strong>Contenuto:</strong>
+                            <div class="text-muted" style="max-height: 200px; overflow-y: auto;">
+                                {{ article.content[:500] }}{% if article.content|length > 500 %}...{% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Analisi Critica</h4>
+                            </div>
+                            <div class="card-body">
+                                <form hx-post="/analysis/api/analyze" 
+                                      hx-target="#analysis-result" 
+                                      hx-indicator="#analysis-loading">
+                                    <input type="hidden" name="article_id" value="{{ article.id }}">
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Provider AI</label>
+                                        <select class="form-select" name="provider">
+                                            <option value="ollama">Ollama (Locale)</option>
+                                            <option value="openai">OpenAI</option>
+                                            <option value="anthropic">Anthropic</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Lingua</label>
+                                        <select class="form-select" name="language">
+                                            <option value="it">Italiano</option>
+                                            <option value="en">English</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <span class="loading-spinner spinner-border spinner-border-sm me-2" id="analysis-loading"></span>
+                                                                        <i class="bi bi-cpu me-1"></i>
+                                Analizza Articolo
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="analysis-result"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

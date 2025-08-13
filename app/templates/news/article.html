@@ -1,0 +1,132 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ article.title }} - News Agent Web{% endblock %}
+
+{% block content %}
+<div class="container-xl">
+    <!-- Navigation Menu -->
+    <div class="navbar navbar-expand-md navbar-light d-print-none mb-0">
+        <div class="container-xl">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">
+                    <i class="bi bi-house me-2"></i>
+                    Home
+                </a>
+                <a class="nav-link" href="/news">
+                    <i class="bi bi-newspaper me-2"></i>
+                    Articoli
+                </a>
+                <a class="nav-link" href="/analysis">
+                    <i class="bi bi-cpu me-2"></i>
+                    Analisi
+                </a>
+                <a class="nav-link" href="/settings">
+                    <i class="bi bi-gear me-2"></i>
+                    Impostazioni
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h3 class="card-title">
+                                    <i class="bi bi-newspaper me-2"></i>
+                                    Articolo
+                                </h3>
+                                <div class="card-actions">
+                                    <a href="/news" class="btn btn-outline-primary">
+                                        <i class="bi bi-arrow-left me-1"></i>
+                                        Torna agli Articoli
+                                    </a>
+                                    <button class="btn btn-success" onclick="analyzeArticle('{{ article._id }}')">
+                                        <i class="bi bi-cpu me-1"></i>
+                                        Analizza
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Metadati articolo -->
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <h1 class="h2 mb-3">{{ article.title }}</h1>
+                                    {% if article.summary %}
+                                    <p class="text-muted lead">{{ article.summary }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Informazioni</h6>
+                                            <div class="mb-2">
+                                                <strong>Fonte:</strong>
+                                                <span class="badge bg-primary ms-2">{{ article.source }}</span>
+                                            </div>
+                                            {% if article.author %}
+                                            <div class="mb-2">
+                                                <strong>Autore:</strong>
+                                                <span class="ms-2">{{ article.author }}</span>
+                                            </div>
+                                            {% endif %}
+                                            {% if article.published_date %}
+                                            <div class="mb-2">
+                                                <strong>Data:</strong>
+                                                <span class="ms-2">{{ article.published_date.strftime('%d/%m/%Y %H:%M') if article.published_date is string else 'N/A' }}</span>
+                                            </div>
+                                            {% endif %}
+                                            {% if article.link %}
+                                            <div class="mb-2">
+                                                <strong>Link:</strong>
+                                                <a href="{{ article.link }}" target="_blank" class="ms-2">
+                                                    <i class="bi bi-box-arrow-up-right"></i>
+                                                    Apri
+                                                </a>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contenuto articolo -->
+                            <div class="article-content">
+                                <h5>Contenuto Completo</h5>
+                                <div class="p-3 rounded border bg-light">
+                                    {{ article.content|replace('\n', '<br>')|safe }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form nascosto per l'analisi -->
+<form id="analysisForm" action="/analysis/analyze" method="POST" style="display: none;">
+    <input type="hidden" id="articleIdInput" name="article_id">
+    <input type="hidden" name="provider" value="ollama">
+    <input type="hidden" name="language" value="it">
+</form>
+
+<script>
+function analyzeArticle(articleId) {
+    console.log('Analisi articolo:', articleId);
+    
+    // Imposta l'ID dell'articolo nel form nascosto
+    document.getElementById('articleIdInput').value = articleId;
+    
+    // Invia il form
+    document.getElementById('analysisForm').submit();
+}
+</script>
+{% endblock %}
+

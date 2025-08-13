@@ -1,0 +1,118 @@
+<!-- Modal per analisi articolo specifico -->
+<div class="text-center">
+    <h4 class="mb-3">
+        <i class="bi bi-cpu me-2"></i>
+        Analizza Articolo
+    </h4>
+    
+    <!-- Info articolo -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ article.title }}</h5>
+            <p class="card-text text-muted">{{ article.summary[:200] }}{% if article.summary|length > 200 %}...{% endif %}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    <i class="bi bi-newspaper me-1"></i>{{ article.source }}
+                </small>
+                <small class="text-muted">
+                    <i class="bi bi-calendar me-1"></i>{{ article.published_date.strftime('%d/%m/%Y') if article.published_date else 'N/A' }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Opzioni analisi -->
+    <div class="mb-4">
+        <label for="analysis-provider" class="form-label">Provider AI:</label>
+        <select class="form-select mb-3" id="analysis-provider">
+            <option value="ollama">Ollama (Locale - Raccomandato)</option>
+            <option value="openai">OpenAI (Richiede API Key)</option>
+            <option value="anthropic">Anthropic (Richiede API Key)</option>
+        </select>
+        
+        <label for="analysis-language" class="form-label">Lingua output:</label>
+        <select class="form-select mb-3" id="analysis-language">
+            <option value="it">Italiano</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+    
+    <!-- Pulsante avvia analisi -->
+    <button type="button" class="btn btn-primary btn-lg" onclick="startArticleAnalysis('{{ article.id }}')">
+        <i class="bi bi-cpu me-2"></i>
+        Avvia Analisi Critica
+    </button>
+    
+    <div class="mt-3">
+        <small class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            L'analisi verrà eseguita in background e potrai monitorarla dalla pagina Analisi
+        </small>
+    </div>
+</div>
+
+<script>
+function startArticleAnalysis(articleId) {
+    var provider = document.getElementById('analysis-provider').value;
+    var language = document.getElementById('analysis-language').value;
+    
+    console.log('Avvio analisi articolo:', articleId, 'Provider:', provider, 'Lingua:', language);
+    
+    // Disabilita il pulsante e mostra stato
+    var btn = event.target;
+    var originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Avvio analisi...';
+    
+    // Chiamata API per avviare analisi
+    fetch('/analysis/api/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            article_id: articleId,
+            provider: provider,
+            language: language
+        })
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            // Bella li - mostra messaggio e chiudi modal
+            btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Analisi avviata!';
+            btn.className = 'btn btn-success btn-lg';
+            
+            setTimeout(function() {
+                // Chiudi modal
+                var modal = bootstrap.Modal.getInstance(document.getElementById('analysis-modal'));
+                if (modal) modal.hide();
+                
+                // Reset pulsante
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.className = 'btn btn-primary btn-lg';
+            }, 2000);
+            
+        } else {
+            // Errore
+            throw new Error(data.error || 'Errore sconosciuto');
+        }
+    })
+    .catch(function(error) {
+        console.error('Errore avvio analisi:', error);
+        
+        // Mostra merda di errore e ripristina pulsante
+        btn.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Errore!';
+        btn.className = 'btn btn-danger btn-lg';
+        
+        setTimeout(function() {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            btn.className = 'btn btn-primary btn-lg';
+        }, 3000);
+    });
+}
+</script>

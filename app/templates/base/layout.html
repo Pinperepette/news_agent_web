@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="{{ language or 'it' }}">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>{% block title %}News Agent Web{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    
+    <!-- Tabler CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        .news-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .news-card:hover {
+            transform: translateY(-2px);
+        }
+        .analysis-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .credibility-score {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .htmx-request .loading-spinner {
+            display: inline-block;
+        }
+        
+        /* Navigation active state styling */
+        .navbar-nav .nav-link.active {
+            color: #206bc4 !important;
+            border-bottom: 2px solid #206bc4;
+        }
+        
+        .navbar-nav .nav-link.active i {
+            color: #206bc4 !important;
+        }
+        
+        .navbar-nav .nav-link.active:hover {
+            color: #206bc4 !important;
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="page">
+
+        
+        <!-- Page header with actions -->
+        {% block page_actions %}{% endblock %}
+        
+        <!-- Page body -->
+        <div class="page-body">
+            <div class="container-xl">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="footer footer-transparent d-print-none">
+            <div class="container-xl">
+                <div class="row text-center align-items-center flex-row-reverse">
+                    <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                        <ul class="list-inline list-inline-dots mb-0">
+                            <li class="list-inline-item">
+                                Sviluppato da <a href="https://x.com/Pinperepette" target="_blank" class="text-decoration-none">@Pinperepette</a>
+                            </li>
+                            <li class="list-inline-item">
+                                Powered by Flask, Tabler & HTMX
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Tabler JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // HTMX configuration
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            evt.detail.headers['X-Requested-With'] = 'XMLHttpRequest';
+        });
+        
+        // Show loading states
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            const target = evt.target;
+            const loadingSpinner = target.querySelector('.loading-spinner');
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'inline-block';
+            }
+        });
+        
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            const target = evt.target;
+            const loadingSpinner = target.querySelector('.loading-spinner');
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'none';
+            }
+        });
+        
+        // Auto-refresh news every 5 minutes
+        {% if auto_refresh %}
+        setInterval(function() {
+            htmx.ajax('GET', '/news/fetch', {target: '#news-container'});
+        }, 300000);
+        {% endif %}
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

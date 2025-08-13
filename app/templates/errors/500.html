@@ -1,0 +1,37 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Errore del server - News Agent Web{% endblock %}
+{% block page_title %}500 - Errore del server{% endblock %}
+
+{% block content %}
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="bi bi-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        <h1 class="display-4 text-muted">500</h1>
+                        <h2 class="h3 mb-3">Errore del server</h2>
+                        <p class="text-muted mb-4">
+                            Si è verificato un errore interno del server. Riprova più tardi, considera che sta guidando una 500
+                        </p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="/" class="btn btn-primary">
+                                <i class="bi bi-house me-2"></i>
+                                Torna alla Home
+                            </a>
+                            <a href="/settings" class="btn btn-outline-primary">
+                                <i class="bi bi-gear me-2"></i>
+                                Controlla Impostazioni
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,709 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Analisi - News Agent Web{% endblock %}
+
+{% block content %}
+
+
+<!-- Navigation Menu -->
+<div class="navbar navbar-expand-md navbar-light d-print-none">
+    <div class="container-xl">
+        <div class="navbar-nav">
+            <a class="nav-link" href="/">
+                <i class="bi bi-house me-2"></i>
+                Home
+            </a>
+            <a class="nav-link" href="/news">
+                <i class="bi bi-newspaper me-2"></i>
+                Articoli
+            </a>
+            <a class="nav-link active" href="/analysis">
+                <i class="bi bi-cpu me-2"></i>
+                Analisi
+            </a>
+            <a class="nav-link" href="/settings">
+                <i class="bi bi-gear me-2"></i>
+                Settings
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+<!-- Dashboard Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary text-white avatar">
+                            <i class="bi bi-check-circle"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium" id="completed-count">{{ stats.completed|default(0) }}</div>
+                        <div class="text-muted">Completate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-warning text-white avatar">
+                            <i class="bi bi-clock"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium" id="processing-count">{{ stats.processing|default(0) }}</div>
+                        <div class="text-muted">In elaborazione</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-danger text-white avatar">
+                            <i class="bi bi-x-circle"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium" id="failed-count">{{ stats.failed|default(0) }}</div>
+                        <div class="text-muted">Fallite</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-info text-white avatar">
+                            <i class="bi bi-graph-up"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium" id="success-rate">{{ "%.1f"|format(stats.success_rate|default(0)) }}%</div>
+                        <div class="text-muted">Tasso di successo</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Analyses List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Analisi Storiche
+                </h3>
+                <div class="card-actions">
+                    <button class="btn btn-primary btn-sm" onclick="refreshAnalyses()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Aggiorna
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDeleteAllAnalyses()">
+                        <i class="bi bi-trash me-1"></i>
+                        Elimina Tutte
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if analyses %}
+                    <div class="table-responsive">
+                        <table class="table table-vcenter" id="analyses-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tipo</th>
+                                    <th>Titolo/Contenuto</th>
+                                    <th>Provider</th>
+                                    <th>Stato</th>
+                                    <th>Punteggio</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for analysis in analyses %}
+                                <tr data-status="{{ analysis.status }}" data-type="{{ analysis.analysis_type }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-2">
+                                                {% if analysis.status == 'completed' %}
+                                                    <span class="avatar-initials bg-success">✓</span>
+                                                {% elif analysis.status == 'processing' %}
+                                                    <span class="avatar-initials bg-warning">⏳</span>
+                                                {% elif analysis.status == 'failed' %}
+                                                    <span class="avatar-initials bg-danger">✗</span>
+                                                {% else %}
+                                                    <span class="avatar-initials bg-secondary">?</span>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <div class="font-weight-medium">{{ analysis.created_at.strftime('%d/%m/%Y') if analysis.created_at else 'N/A' }}</div>
+                                                <div class="text-muted">{{ analysis.created_at.strftime('%H:%M') if analysis.created_at else '' }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ analysis.analysis_type|title }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 200px;" title="{{ analysis.analysis_type|title }} - {{ analysis.article_id[:8] if analysis.article_id else 'N/A' }}">
+                                            {% if analysis.analysis_type == 'custom_url' %}
+                                                {% set result_data = analysis.result|from_json %}
+                                                {% if result_data and result_data.scraped_article %}
+                                                    <strong>{{ result_data.scraped_article.title[:50] }}{{ '...' if result_data.scraped_article.title|length > 50 else '' }}</strong><br>
+                                                    <small class="text-muted">🔗 {{ result_data.scraped_article.source }}</small>
+                                                {% else %}
+                                                    <strong>Analisi URL</strong><br>
+                                                    <small class="text-muted">🔗 URL personalizzato</small>
+                                                {% endif %}
+                                            {% elif analysis.analysis_type == 'custom_text' %}
+                                                {% set result_data = analysis.result|from_json %}
+                                                {% if result_data and result_data.custom_title %}
+                                                    <strong>{{ result_data.custom_title[:50] }}{{ '...' if result_data.custom_title|length > 50 else '' }}</strong><br>
+                                                    <small class="text-muted">📝 Testo personalizzato</small>
+                                                {% else %}
+                                                    <strong>Analisi Testo</strong><br>
+                                                    <small class="text-muted">📝 Testo personalizzato</small>
+                                                {% endif %}
+                                            {% elif analysis.article_id %}
+                                                <strong>Articolo</strong><br>
+                                                <small class="text-muted">ID: {{ analysis.article_id[:8] }}</small>
+                                            {% else %}
+                                                <strong>{{ analysis.analysis_type|title }}</strong><br>
+                                                <small class="text-muted">Analisi generica</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ analysis.provider|default('N/A') }}</span>
+                                    </td>
+                                    <td>
+                                        {% if analysis.status == 'completed' %}
+                                            <span class="badge bg-success">Completata</span>
+                                        {% elif analysis.status == 'processing' %}
+                                            <div class="d-flex flex-column gap-1">
+                                            <span class="badge bg-warning">In elaborazione</span>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-arrow-clockwise me-1"></i>
+                                                    Aggiornamento automatico
+                                                </small>
+                                            </div>
+                                        {% elif analysis.status == 'failed' %}
+                                            <span class="badge bg-danger">Fallita</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ analysis.status|default('N/A') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if analysis.status == 'completed' and analysis.result %}
+                                            {% set result_data = analysis.result|from_json %}
+                                            {% set score = none %}
+                                            {% if result_data %}
+                                                <!-- Cerca il punteggio in ordine di priorità -->
+                                                {% if result_data.initial_analysis and result_data.initial_analysis.livello_credibilità %}
+                                                    {% set score = result_data.initial_analysis.livello_credibilità %}
+                                                {% elif result_data.orchestrator_result and result_data.orchestrator_result.final_evaluation and result_data.orchestrator_result.final_evaluation.confidence_score %}
+                                                    {% set score = result_data.orchestrator_result.final_evaluation.confidence_score %}
+                                                {% elif result_data.final_evaluation and result_data.final_evaluation.confidence_score %}
+                                                    {% set score = result_data.final_evaluation.confidence_score %}
+                                                {% elif result_data.evaluation and result_data.evaluation.punteggio_finale %}
+                                                    {% set score = result_data.evaluation.punteggio_finale %}
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if score %}
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress me-2" style="width: 60px;">
+                                                        <div class="progress-bar bg-success" style="width: {{ (score or 5) * 10 }}%"></div>
+                                                    </div>
+                                                    <span class="font-weight-medium">{{ score or 'N/A' }}/10</span>
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        {% elif analysis.status == 'processing' %}
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 60px;">
+                                                    <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" style="width: 60%"></div>
+                                                </div>
+                                                <span class="text-muted">In corso...</span>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-list">
+                                        {% if analysis.status == 'completed' %}
+                                            <a href="/analysis/result/{{ analysis.id }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye me-1"></i>
+                                                Visualizza
+                                            </a>
+                                            {% elif analysis.status == 'processing' %}
+                                                <div class="d-flex flex-column gap-1">
+                                                    <button class="btn btn-sm btn-warning" disabled>
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        In corso...
+                                                    </button>
+                                                    <small class="text-muted text-center">
+                                                        <i class="bi bi-arrow-clockwise me-1"></i>
+                                                        Aggiornamento automatico
+                                                    </small>
+                                                    <small class="text-info text-center">
+                                                        <i class="bi bi-hourglass-split me-1"></i>
+                                                        Tempo stimato: 2-5 min
+                                                    </small>
+                                                </div>
+                                            {% elif analysis.status == 'failed' %}
+                                                <button class="btn btn-sm btn-outline-danger" onclick="retryAnalysis('{{ analysis.id }}')">
+                                                    <i class="bi bi-arrow-clockwise me-1"></i>
+                                                    Riprova
+                                                </button>
+                                        {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty">
+                        <div class="empty-img">
+                            <i class="bi bi-cpu" style="font-size: 4rem; color: #ccc;"></i>
+                        </div>
+                        <p class="empty-title">Nessuna analisi disponibile</p>
+                        <p class="empty-subtitle text-muted">
+                            Inizia analizzando una notizia o un testo personalizzato.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    </div> <!-- container-xl -->
+</div> <!-- page-body -->
+
+<!-- JavaScript per filtri e funzionalità -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aggiorna automaticamente ogni 30 secondi
+    setInterval(refreshAnalyses, 30000);
+});
+
+function refreshAnalyses() {
+    // Mostra indicatore di caricamento
+    const refreshBtn = document.querySelector('button[onclick="refreshAnalyses()"]');
+    if (refreshBtn) {
+        const originalText = refreshBtn.innerHTML;
+        refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Aggiornamento...';
+        refreshBtn.disabled = true;
+        
+        // Chiamata API per aggiornare i dati
+        fetch('/analysis/api/analyses/refresh')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Aggiorna le statistiche
+                    updateStatsFromAPI(data.stats);
+                    // Aggiorna la tabella senza duplicati
+                    updateAnalysesTable(data.analyses);
+                    showSuccessMessage('Analisi aggiornate con successo!');
+                } else {
+                    showErrorMessage('Errore nell\'aggiornamento: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Errore refresh:', error);
+                showErrorMessage('Errore di connessione durante l\'aggiornamento');
+            })
+            .finally(() => {
+                // Ripristina il pulsante
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = originalText;
+                    refreshBtn.disabled = false;
+                }
+            });
+    }
+}
+
+function updateAnalysesTable(analyses) {
+    const tbody = document.querySelector('#analyses-table tbody');
+    if (!tbody) return;
+    
+    // Brasa tutte le righe esistenti
+    tbody.innerHTML = '';
+    
+    // Aggiungi le nuove analisi
+    analyses.forEach(analysis => {
+        const row = createAnalysisRow(analysis);
+        tbody.appendChild(row);
+    });
+    
+    // Aggiorna statistiche
+    updateStats();
+}
+
+function createAnalysisRow(analysis) {
+    const row = document.createElement('tr');
+    row.dataset.status = analysis.status || 'unknown';
+    row.dataset.type = analysis.analysis_type || 'unknown';
+    
+    // Data e stato
+    const dateCell = document.createElement('td');
+    const createdDate = analysis.created_at ? new Date(analysis.created_at) : new Date();
+    const statusIcon = getStatusIcon(analysis.status);
+    
+    dateCell.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-sm me-2">
+                ${statusIcon}
+                    </div>
+            <div>
+                <div class="font-weight-medium">${createdDate.toLocaleDateString('it-IT')}</div>
+                <div class="text-muted">${createdDate.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}</div>
+            </div>
+        </div>
+    `;
+    
+    // Tipo
+    const typeCell = document.createElement('td');
+    typeCell.innerHTML = `<span class="badge bg-primary">${(analysis.analysis_type || 'N/A').toUpperCase()}</span>`;
+    
+    // Titolo/Contenuto
+    const titleCell = document.createElement('td');
+    titleCell.innerHTML = `
+        <div class="text-truncate" style="max-width: 200px;" title="${analysis.analysis_type || 'N/A'} - ${(analysis.article_id || 'N/A').substring(0, 8)}">
+            <strong>${(analysis.analysis_type || 'N/A').toUpperCase()}</strong><br>
+            <small class="text-muted">ID: ${(analysis.article_id || 'N/A').substring(0, 8)}</small>
+    </div>
+    `;
+    
+    // Provider
+    const providerCell = document.createElement('td');
+    providerCell.innerHTML = `<span class="badge bg-secondary">${analysis.provider || 'N/A'}</span>`;
+    
+    // Stato
+    const statusCell = document.createElement('td');
+    statusCell.innerHTML = getStatusBadge(analysis.status);
+    
+    // Punteggio
+    const scoreCell = document.createElement('td');
+    scoreCell.innerHTML = getScoreDisplay(analysis);
+    
+    // Azioni
+    const actionsCell = document.createElement('td');
+    actionsCell.innerHTML = getActionsDisplay(analysis);
+    
+    // Aggiungi tutte le celle alla riga
+    row.appendChild(dateCell);
+    row.appendChild(typeCell);
+    row.appendChild(titleCell);
+    row.appendChild(providerCell);
+    row.appendChild(statusCell);
+    row.appendChild(scoreCell);
+    row.appendChild(actionsCell);
+    
+    return row;
+}
+
+function getStatusIcon(status) {
+    switch(status) {
+        case 'completed':
+            return '<span class="avatar-initials bg-success">✓</span>';
+        case 'processing':
+            return '<span class="avatar-initials bg-warning">⏳</span>';
+        case 'failed':
+            return '<span class="avatar-initials bg-danger">✗</span>';
+        default:
+            return '<span class="avatar-initials bg-secondary">?</span>';
+    }
+}
+
+function getStatusBadge(status) {
+    switch(status) {
+        case 'completed':
+            return '<span class="badge bg-success">Completata</span>';
+        case 'processing':
+            return '<span class="badge bg-warning">In elaborazione</span>';
+        case 'failed':
+            return '<span class="badge bg-danger">Fallita</span>';
+        default:
+            return `<span class="badge bg-secondary">${status || 'N/A'}</span>`;
+    }
+}
+
+function getScoreDisplay(analysis) {
+    if (analysis.status === 'completed' && analysis.result) {
+        try {
+            let resultData;
+            
+            // Prova prima JSON normale
+            if (typeof analysis.result === 'string') {
+                try {
+                    resultData = JSON.parse(analysis.result);
+                } catch (jsonError) {
+                    // Se JSON fallisce, il parsing è già fatto lato server dal filtro from_json
+                    console.log('Result è probabilmente una stringa Python, usa il filtro from_json lato server');
+                    return '<span class="text-muted">Usa template</span>';
+                }
+            } else {
+                resultData = analysis.result;
+            }
+            
+            let score = null;
+            
+            if (resultData) {
+                // Cerca il punteggio in ordine di priorità
+                if (resultData.initial_analysis && resultData.initial_analysis.livello_credibilità) {
+                    score = resultData.initial_analysis.livello_credibilità;
+                } else if (resultData.orchestrator_result && resultData.orchestrator_result.final_evaluation && resultData.orchestrator_result.final_evaluation.confidence_score) {
+                    score = resultData.orchestrator_result.final_evaluation.confidence_score;
+                } else if (resultData.final_evaluation && resultData.final_evaluation.confidence_score) {
+                    score = resultData.final_evaluation.confidence_score;
+                } else if (resultData.evaluation && resultData.evaluation.punteggio_finale) {
+                    score = resultData.evaluation.punteggio_finale;
+                }
+            }
+            
+            if (score !== null && score !== undefined) {
+                return `
+                    <div class="d-flex align-items-center">
+                        <div class="progress me-2" style="width: 60px;">
+                            <div class="progress-bar bg-success" style="width: ${(score || 5) * 10}%"></div>
+                        </div>
+                        <span class="font-weight-medium">${score}/10</span>
+                    </div>
+                `;
+            }
+        } catch (e) {
+            console.warn('Errore parsing punteggio:', e);
+        }
+    }
+    return '<span class="text-muted">-</span>';
+}
+
+function getActionsDisplay(analysis) {
+    if (analysis.status === 'completed') {
+        return `
+            <div class="btn-list">
+                <a href="/analysis/result/${analysis.id}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-eye me-1"></i>
+                    Visualizza
+                </a>
+            </div>
+        `;
+    } else if (analysis.status === 'processing') {
+        return `
+            <div class="btn-list">
+                <button class="btn btn-sm btn-warning" disabled>
+                    <i class="bi bi-clock me-1"></i>
+                    In corso...
+                        </button>
+                    </div>
+        `;
+    } else if (analysis.status === 'failed') {
+        return `
+            <div class="btn-list">
+                <button class="btn btn-sm btn-outline-danger" onclick="retryAnalysis('${analysis.id}')">
+                    <i class="bi bi-arrow-clockwise me-1"></i>
+                    Riprova
+                </button>
+            </div>
+        `;
+    }
+    return '';
+}
+
+function updateStatsFromAPI(stats) {
+    // Aggiorna le statistiche nella dashboard
+    const statsElements = document.querySelectorAll('.font-weight-medium');
+    if (statsElements.length >= 4) {
+        statsElements[0].textContent = stats.completed;
+        statsElements[1].textContent = stats.processing;
+        statsElements[2].textContent = stats.failed;
+        statsElements[3].textContent = stats.success_rate.toFixed(1) + '%';
+    }
+}
+
+function showSuccessMessage(message) {
+    // Mostra messaggio di successo temporaneo
+    const toast = document.createElement('div');
+    toast.className = 'toast show position-fixed top-0 end-0 m-3';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <div class="toast-header bg-success text-white">
+            <i class="bi bi-check-circle me-2"></i>
+            <strong class="me-auto">Successo</strong>
+            <button type="button" class="btn-close btn-close-white" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+        <div class="toast-body">
+            ${message}
+        </div>
+    `;
+    document.body.appendChild(toast);
+    
+    // Rimuovi automaticamente dopo 3 secondi
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+function showErrorMessage(message) {
+    // Mostra messaggio di errore temporaneo
+    const toast = document.createElement('div');
+    toast.className = 'toast show position-fixed top-0 end-0 m-3';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <div class="toast-header bg-danger text-white">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong class="me-auto">Errore</strong>
+            <button type="button" class="btn-close btn-close-white" onclick="this.parentElement.parentElement.remove()"></button>
+    </div>
+        <div class="toast-body">
+            ${message}
+</div>
+    `;
+    document.body.appendChild(toast);
+    
+    // Rimuovi automaticamente dopo 5 secondi
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function retryAnalysis(analysisId) {
+    if (confirm('Vuoi riprovare questa analisi?')) {
+        // In futuro implementeremo la logica di retry
+        alert('Funzionalità di retry in sviluppo');
+    }
+}
+
+
+
+function confirmDeleteAllAnalyses() {
+    if (confirm('⚠️ ATTENZIONE: Stai per eliminare TUTTE le analisi dal database!\n\nQuesta azione è irreversibile.\n\nSei sicuro di voler continuare?')) {
+        deleteAllAnalyses();
+    }
+}
+
+
+
+function deleteAllAnalyses() {
+    fetch('/analysis/api/analyses/delete-all', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage(`✅ ${data.message}`);
+            // Ricarica la pagina dopo l'eliminazione
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showErrorMessage('❌ Errore nell\'eliminazione: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Errore eliminazione analisi:', error);
+        showErrorMessage('❌ Errore di connessione durante l\'eliminazione');
+    });
+}
+
+// Funzione per aggiornare le statistiche in tempo reale
+function updateStats() {
+    const rows = document.querySelectorAll('#analyses-table tbody tr');
+    let completed = 0, processing = 0, failed = 0;
+    const allStatuses = [];
+    
+    rows.forEach(row => {
+        const status = row.dataset.status;
+        allStatuses.push(status);
+        if (status === 'completed') completed++;
+        else if (status === 'processing') processing++;
+        else if (status === 'failed') failed++;
+    });
+    
+    const total = rows.length;
+    const successRate = total > 0 ? ((completed / total) * 100) : 0;
+    
+    // Debug: mostra gli status trovati
+    console.log('🔍 Status trovati nel frontend:', allStatuses);
+    console.log('📊 Conteggio frontend:', {completed, processing, failed, total});
+    
+    // Aggiorna le statistiche nella dashboard usando ID specifici
+    const completedEl = document.getElementById('completed-count');
+    const processingEl = document.getElementById('processing-count');
+    const failedEl = document.getElementById('failed-count');
+    const successRateEl = document.getElementById('success-rate');
+    
+    if (completedEl) {
+        console.log('📊 Aggiorno completed da', completedEl.textContent, 'a', completed);
+        completedEl.textContent = completed;
+    }
+    if (processingEl) {
+        console.log('📊 Aggiorno processing da', processingEl.textContent, 'a', processing);
+        processingEl.textContent = processing;
+    }
+    if (failedEl) {
+        console.log('📊 Aggiorno failed da', failedEl.textContent, 'a', failed);
+        failedEl.textContent = failed;
+    }
+    if (successRateEl) {
+        console.log('📊 Aggiorno success rate da', successRateEl.textContent, 'a', successRate.toFixed(1) + '%');
+        successRateEl.textContent = successRate.toFixed(1) + '%';
+    }
+}
+
+// Inizializza tutto quando la pagina è caricata
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug: mostra i valori iniziali dal backend
+    const completedEl = document.getElementById('completed-count');
+    const processingEl = document.getElementById('processing-count');
+    const failedEl = document.getElementById('failed-count');
+    const successRateEl = document.getElementById('success-rate');
+    
+    console.log('🏁 Valori iniziali dal backend:');
+    console.log('   Completed:', completedEl ? completedEl.textContent : 'N/A');
+    console.log('   Processing:', processingEl ? processingEl.textContent : 'N/A');
+    console.log('   Failed:', failedEl ? failedEl.textContent : 'N/A');
+    console.log('   Success Rate:', successRateEl ? successRateEl.textContent : 'N/A');
+    
+    updateStats();
+    
+    // Aggiorna automaticamente ogni 30 secondi
+    setInterval(refreshAnalyses, 30000);
+});
+</script>
+{% endblock %}

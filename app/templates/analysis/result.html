@@ -1,0 +1,656 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Risultato Analisi{% endblock %}
+
+{% block content %}
+<div class="container-xl">
+    <!-- Navigation Menu -->
+    <div class="navbar navbar-expand-md navbar-light d-print-none mb-0">
+        <div class="container-xl">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">
+                    <i class="bi bi-house me-2"></i>
+                    Home
+                </a>
+                <a class="nav-link" href="/news">
+                    <i class="bi bi-newspaper me-2"></i>
+                    Articoli
+                </a>
+                <a class="nav-link active" href="/analysis">
+                    <i class="bi bi-cpu me-2"></i>
+                    Analisi
+                </a>
+                <a class="nav-link" href="/settings">
+                    <i class="bi bi-gear me-2"></i>
+                    Impostazioni
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="bi bi-cpu me-2"></i>
+                                {% set result_data = analysis.result|from_json %}
+                                {% if analysis.analysis_type == 'custom_url' and result_data and result_data.scraped_article %}
+                                    Analisi URL: {{ result_data.scraped_article.title }}
+                                {% elif analysis.analysis_type == 'custom_text' and result_data and result_data.custom_title %}
+                                    Analisi Testo: {{ result_data.custom_title }}
+                                {% elif article %}
+                                    Analisi: {{ article.title }}
+                                {% else %}
+                                    Risultato Analisi
+                                {% endif %}
+                            </h3>
+                            <div class="card-actions">
+                                <a href="/analysis" class="btn btn-outline-primary">
+                                    <i class="bi bi-arrow-left me-1"></i>
+                                    Torna alle Analisi
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body" style="font-size: 1.1em;">
+                            {% if analysis and analysis.result %}
+                                {% set result_data = analysis.result|from_json if analysis.result is string else analysis.result %}
+                                <!-- Articolo Analizzato -->
+                                {% if article or (analysis.custom_title and analysis.custom_text) %}
+                                <div class="card mb-3">
+                                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title mb-0"><i class="bi bi-newspaper me-2"></i>Articolo Analizzato</h5>
+                                        <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#articleDetails" aria-expanded="false" aria-controls="articleDetails">
+                                            <i class="bi bi-eye me-1"></i>Mostra/Nascondi
+                                        </button>
+                                    </div>
+                                    <div class="collapse" id="articleDetails">
+                                        <div class="card-body">
+                                            {% if article %}
+                                                <!-- Articolo da URL -->
+                                                <div class="mb-3">
+                                                    <h6 class="text-primary fw-bold mb-2">
+                                                        <i class="bi bi-link-45deg me-1"></i>
+                                                        {% if article.link and not article.link.startswith('/') %}
+                                                        <a href="{{ article.link }}" target="_blank" class="text-decoration-none text-primary" rel="noopener noreferrer">
+                                                            {{ article.title or 'Titolo non disponibile' }}
+                                                            <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.8em;"></i>
+                                                        </a>
+                                                        {% else %}
+                                                        <span class="text-primary">
+                                                            {{ article.title or 'Titolo non disponibile' }}
+                                                        </span>
+                                                        <small class="text-muted ms-2">(URL originale non disponibile)</small>
+                                                        {% endif %}
+                                                    </h6>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-calendar me-1"></i>{{ article.published_date.strftime('%d/%m/%Y %H:%M') if article.published_date else 'Data non disponibile' }}
+                                                        {% if article.source %}
+                                                        | <i class="bi bi-building me-1"></i>{{ article.source }}
+                                                        {% endif %}
+                                                    </small>
+                                                </div>
+                                                <div class="p-3 rounded border bg-light" style="max-height: 400px; overflow-y: auto;">
+                                                    <p class="mb-0" style="white-space: pre-line; line-height: 1.6;">{{ article.content or 'Contenuto non disponibile' }}</p>
+                                                </div>
+                                            {% else %}
+                                                <!-- Fallback per analisi senza articolo -->
+                                                <div class="text-center text-muted py-4">
+                                                    <i class="bi bi-info-circle me-2"></i>
+                                                    Nessun articolo associato a questa analisi
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <section id="compact-result" class="mb-4">
+                                    <!-- KPI Summary -->
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-6 col-md-3">
+                                            <div class="card shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <div class="h2 text-primary mb-1">
+                                        {% if result_data.orchestrator_result and result_data.orchestrator_result.final_evaluation and result_data.orchestrator_result.final_evaluation.confidence_score %}
+                                            {{ result_data.orchestrator_result.final_evaluation.confidence_score|int }}/10
+                                        {% elif result_data.initial_analysis and result_data.initial_analysis.livello_credibilità %}
+                                            {{ result_data.initial_analysis.livello_credibilità }}/10
+                                        {% else %}
+                                            N/D
+                                        {% endif %}
+                                    </div>
+                                                    <div class="text-muted">Livello Confidenza</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="card shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <div class="h2 text-success mb-1">{{ (result_data.primary_domain|title) if result_data.primary_domain is defined else 'N/D' }}</div>
+                                                    <div class="text-muted">Dominio</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="card shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <div class="h2 text-info mb-1">{{ ((result_data.orchestrator_result.raw_agent_results|length) if result_data.orchestrator_result and result_data.orchestrator_result.raw_agent_results else ((result_data.raw_agent_results|length) if result_data.raw_agent_results else 1)) }}</div>
+                                                    <div class="text-muted">Agenti</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="card shadow-sm">
+                                                <div class="card-body text-center">
+                                                    <div class="h2 text-warning mb-1">
+                                                        {% set query_count = ((result_data.orchestrator_result.raw_agent_results|length * 5) if result_data.orchestrator_result and result_data.orchestrator_result.raw_agent_results else ((result_data.raw_agent_results|length * 5) if result_data.raw_agent_results else 0)) %}
+                                                        {{ query_count }}
+                                                    </div>
+                                                    <div class="text-muted">Query</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Decisione / Agente -->
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-header"><strong>Decisione Orchestrator</strong></div>
+                                                <div class="card-body">
+                                                    <div class="mb-2">
+                                                        <span class="text-muted">Agenti scelti:</span>
+                                                        {% set agents_list = (result_data.orchestrator_result.raw_agent_results if result_data.orchestrator_result and result_data.orchestrator_result.raw_agent_results else result_data.raw_agent_results) %}
+                                                        {% if agents_list %}
+                                                            {% for agent in agents_list %}
+                                                                <span class="badge bg-primary me-1">{{ agent.get('agent_name', 'N/D')|title }}</span>
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            <span class="text-muted">N/D</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <span class="text-muted">Motivazione:</span>
+                                                        <div>Analisi orchestrata automatica basata su dominio {{ result_data.primary_domain }}</div>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-muted">Caratteristiche:</span>
+                                                        {% if result_data.orchestrator_result and result_data.orchestrator_result.orchestration_metadata %}
+                                                            <span class="badge bg-secondary me-1">{{ result_data.orchestrator_result.orchestration_metadata.orchestration_strategy|title }}</span>
+                                                            <span class="badge bg-secondary me-1">{{ result_data.orchestrator_result.rounds_executed }} Round</span>
+                                                        {% else %}
+                                                            <span class="text-muted">—</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-header"><strong>Dettagli Agente Principale</strong></div>
+                                                <div class="card-body">
+                                                    {% set main_agent = (result_data.orchestrator_result.raw_agent_results[0] if result_data.orchestrator_result and result_data.orchestrator_result.raw_agent_results else (result_data.raw_agent_results[0] if result_data.raw_agent_results else none)) %}
+                                                    <div class="d-flex align-items-center gap-3 mb-2">
+                                                        <div class="display-5">{% if main_agent and main_agent.get('agent_name') == 'scientifico' %}🔬{% elif main_agent and main_agent.get('agent_name') == 'politico' %}🏛️{% elif main_agent and main_agent.get('agent_name') == 'tecnologico' %}💻{% elif main_agent and main_agent.get('agent_name') == 'universale' %}🌍{% elif main_agent and main_agent.get('agent_name') == 'economico' %}💰{% elif main_agent and main_agent.get('agent_name') == 'cronaca' %}📰{% else %}🤖{% endif %}</div>
+                                                        <div>
+                                                            <div class="h5 mb-0">{{ main_agent.get('agent_name', 'N/D')|title if main_agent else 'N/D' }}</div>
+                                                            <div class="badge bg-info">{{ result_data.primary_domain|title if result_data.primary_domain is defined else '—' }}</div>
+                                                        </div>
+                                                    </div>
+                                                    {% if main_agent and main_agent.get('evaluation') %}
+                                                                                                    <div>
+                                                <span class="text-muted">Conferma:</span>
+                                                {% if main_agent.get('evaluation', {}).get('conferma') == true or main_agent.get('evaluation', {}).get('conferma') == 'true' %}
+                                                    <span class="badge bg-success">Confermata</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Non Confermata</span>
+                                                {% endif %}
+                                            </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Query -->
+                                    {% if analysis.result.queries %}
+                                    <div class="card mb-3">
+                                        <div class="card-header"><strong>Query Strategiche Generate</strong></div>
+                                        <div class="card-body">
+                                            <div class="row g-2">
+                                                {% for q in analysis.result.queries %}
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center p-2 rounded border bg-warning-subtle">
+                                                        <i class="bi bi-search text-warning me-2"></i>
+                                                        <div class="small">{{ q }}</div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Valutazione -->
+                                    {% set main_agent = (result_data.orchestrator_result.raw_agent_results[0] if result_data.orchestrator_result and result_data.orchestrator_result.raw_agent_results else (result_data.raw_agent_results[0] if result_data.raw_agent_results else none)) %}
+                                    {% if main_agent and main_agent.get('evaluation') %}
+                                    <div class="card mb-3">
+                                        <div class="card-header"><strong>Valutazione Dettagliata</strong></div>
+                                        <div class="card-body">
+                                            <div class="mb-2">
+                                                <span class="text-muted">Conferma:</span>
+                                                {% if main_agent.get('evaluation', {}).get('conferma') is defined %}
+                                                    {% if main_agent.get('evaluation', {}).get('conferma') == true or main_agent.get('evaluation', {}).get('conferma') == 'true' %}
+                                                        <span class="badge bg-success">Confermata</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">Non Confermata</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Non Specificato</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="mb-3">
+                                                <span class="text-muted d-block mb-1">Livello Affidabilità</span>
+                                                {% set score = (main_agent.get('evaluation', {}).get('punteggio_finale') if main_agent and main_agent.get('evaluation') else None) %}
+                                                {% if score is not none %}
+                                                <div class="progress" style="height: 18px;">
+                                                    <div class="progress-bar" role="progressbar" style="width: {{ score * 10 }}%">{{ score }}/10</div>
+                                                </div>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Non disponibile</span>
+                                                {% endif %}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Conclusioni -->
+                                    {% if main_agent and main_agent.get('evaluation') %}
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="card-title mb-0"><i class="bi bi-check-circle me-2"></i>Conclusioni Finali</h5>
+                                        </div>
+                                        <div class="card-body">
+                                                                                            <div class="mb-2">
+                                                <strong>Giudizio:</strong>
+                                                {% if main_agent.get('evaluation', {}).get('conferma') == true or main_agent.get('evaluation', {}).get('conferma') == 'true' %}
+                                                    <span class="badge bg-success fs-6">Confermata</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning fs-6">Non Confermata</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong>Punteggio Finale:</strong>
+                                                <span class="badge bg-primary fs-6">{{ main_agent.get('evaluation', {}).get('punteggio_finale', 'N/D') }}/10</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong>Credibilità Generale:</strong>
+                                                <span class="badge bg-info fs-6">{{ main_agent.get('evaluation', {}).get('credibilità_complessiva', 'N/D')|title }}</span>
+                                            </div>
+                                            <div style="font-size: 1.2em; line-height: 1.5;">
+                                                <!-- Valutazione generale -->
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Valutazione generale</h5>
+                                                    <p class="mb-0">La notizia ha una <strong>credibilità {{ main_agent.get('evaluation', {}).get('verosimiglianza', 'media') }}</strong>: {{ main_agent.get('evaluation', {}).get('spiegazione', 'Analisi non disponibile.')|replace('\n', ' ') }}</p>
+                                                </div>
+                                                
+                                                <!-- Punti che fanno dubitare -->
+                                                {% if main_agent.get('evaluation', {}).get('punti_sospetti') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Punti che fanno dubitare</h5>
+                                                    <ol class="mb-0">
+                                                        {% for punto in main_agent.get('evaluation', {}).get('punti_sospetti', []) %}
+                                                        <li class="mb-1">{{ punto }}</li>
+                                                        {% endfor %}
+                                                    </ol>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <!-- Possibili scenari -->
+                                                {% if result_data.initial_analysis and result_data.initial_analysis.possibili_scenari %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Possibili scenari</h5>
+                                                    <ul class="mb-0">
+                                                        {% for scenario in result_data.initial_analysis.possibili_scenari %}
+                                                        <li>{{ scenario }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+
+                                                <!-- Query Strategiche -->
+                                                {% if result_data.initial_analysis and result_data.initial_analysis.query_strategiche %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Query Strategiche</h5>
+                                                    <ul class="mb-0">
+                                                        {% for query in result_data.initial_analysis.query_strategiche %}
+                                                        <li>{{ query }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+
+                                                <!-- Contraddizioni Logiche -->
+                                                {% if main_agent.get('evaluation', {}).get('contraddizioni_logiche') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Contraddizioni Logiche</h5>
+                                                    <ul class="mb-0">
+                                                        {% for contraddizione in main_agent.get('evaluation', {}).get('contraddizioni_logiche', []) %}
+                                                        <li>{{ contraddizione }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+
+                                                <!-- Fact Checking Precedenti -->
+                                                {% if main_agent.get('evaluation', {}).get('fact_checking_precedenti') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Fact Checking Precedenti</h5>
+                                                    <ul class="mb-0">
+                                                        {% for fact in main_agent.get('evaluation', {}).get('fact_checking_precedenti', []) %}
+                                                        <li>{{ fact }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <!-- Bias e possibili intenzioni -->
+                                                {% if main_agent.get('evaluation', {}).get('bias_generali') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Bias e possibili intenzioni</h5>
+                                                    <p class="mb-0">{{ main_agent.get('evaluation', {}).get('bias_generali', [])|join(' ') }}</p>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <!-- Evidenze a favore -->
+                                                {% if main_agent.get('evaluation', {}).get('evidenze_a_favore') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Evidenze a favore</h5>
+                                                    <ul class="mb-0">
+                                                        {% for evidenza in main_agent.get('evaluation', {}).get('evidenze_a_favore', []) %}
+                                                        <li>{{ evidenza }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <!-- Evidenze contrarie -->
+                                                {% if main_agent.get('evaluation', {}).get('evidenze_contro') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Evidenze contrarie</h5>
+                                                    <ul class="mb-0">
+                                                        {% for evidenza in main_agent.get('evaluation', {}).get('evidenze_contro', []) %}
+                                                        <li>{{ evidenza }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <!-- Raccomandazioni -->
+                                                {% if main_agent.get('evaluation', {}).get('raccomandazioni') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Raccomandazioni</h5>
+                                                    <ul class="mb-0">
+                                                        {% for raccomandazione in main_agent.get('evaluation', {}).get('raccomandazioni', []) %}
+                                                        <li>{{ raccomandazione }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+
+                                                <!-- Dettagli Tecnici Specifici -->
+                                                {% if main_agent.get('evaluation', {}).get('fattibilità_tecnica') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Valutazione Tecnica</h5>
+                                                    <p><strong>Fattibilità Tecnica:</strong> {{ main_agent.get('evaluation', {}).get('fattibilità_tecnica', 'N/D')|title }}</p>
+                                                    {% if main_agent.get('evaluation', {}).get('hype_tecnologico') %}
+                                                    <p><strong>Hype Tecnologico:</strong> {{ main_agent.get('evaluation', {}).get('hype_tecnologico', 'N/D')|title }}</p>
+                                                    {% endif %}
+                                                </div>
+                                                {% endif %}
+
+                                                <!-- Limitazioni Tecniche -->
+                                                {% if main_agent.get('evaluation', {}).get('limitazioni_tecniche') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Limitazioni Tecniche</h5>
+                                                    <ul class="mb-0">
+                                                        {% for limitazione in main_agent.get('evaluation', {}).get('limitazioni_tecniche', []) %}
+                                                        <li>{{ limitazione }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+
+                                                <!-- Qualità Fonti e Credibilità -->
+                                                {% if main_agent.get('evaluation', {}).get('qualità_fonti') or main_agent.get('evaluation', {}).get('credibilità_complessiva') or main_agent.get('evaluation', {}).get('coerenza_logica') %}
+                                                <div class="mb-3">
+                                                    <h5 class="fw-bold text-primary mb-2">Valutazione Qualitativa</h5>
+                                                    {% if main_agent.get('evaluation', {}).get('qualità_fonti') %}
+                                                    <p><strong>Qualità Fonti:</strong> <span class="badge bg-info">{{ main_agent.get('evaluation', {}).get('qualità_fonti', 'N/D')|title }}</span></p>
+                                                    {% endif %}
+                                                    {% if main_agent.get('evaluation', {}).get('credibilità_complessiva') %}
+                                                    <p><strong>Credibilità Complessiva:</strong> <span class="badge bg-info">{{ main_agent.get('evaluation', {}).get('credibilità_complessiva', 'N/D')|title }}</span></p>
+                                                    {% endif %}
+                                                    {% if main_agent.get('evaluation', {}).get('coerenza_logica') %}
+                                                    <p><strong>Coerenza Logica:</strong> <span class="badge bg-info">{{ main_agent.get('evaluation', {}).get('coerenza_logica', 'N/D')|title }}</span></p>
+                                                    {% endif %}
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <!-- Conclusione sintetica -->
+                                                <div class="mb-0">
+                                                    <h5 class="fw-bold text-primary mb-2">Conclusione sintetica</h5>
+                                                    <div class="alert alert-{{ 'success' if (main_agent.get('evaluation', {}).get('conferma') == true or main_agent.get('evaluation', {}).get('conferma') == 'true') else 'warning' }} border-0 p-3 mb-0">
+                                                        <p class="mb-0 fw-semibold">
+                                                            {% if main_agent.get('evaluation', {}).get('conferma') == true or main_agent.get('evaluation', {}).get('conferma') == 'true' %}
+                                                            La notizia appare credibile e verificabile.
+                                                            {% else %}
+                                                            La notizia sembra plausibile, ma manca di conferme solide e presenta elementi poco chiari. Potrebbe essere vera, ma non è sicuro; al momento è più prudente considerarla "da verificare" prima di prenderla per buona.
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Dettagli TUTTI gli Agenti -->
+                                    {% set all_agents_list = (result_data.orchestrator_result.raw_agent_results if result_data.orchestrator_result and result_data.orchestrator_result.raw_agent_results else result_data.raw_agent_results) %}
+                                    {% if all_agents_list and all_agents_list|length >= 1 %}
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-secondary text-white">
+                                            <h5 class="card-title mb-0"><i class="bi bi-robot me-2"></i>{% if all_agents_list|length == 1 %}Agente Utilizzato{% else %}Tutti gli Agenti Utilizzati{% endif %} ({{ all_agents_list|length }})</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="accordion" id="allAgentsAccordion">
+                                                {% for agent in all_agents_list %}
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="agentHeading{{ loop.index }}">
+                                                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#agentCollapse{{ loop.index }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="agentCollapse{{ loop.index }}">
+                                                            <div class="d-flex align-items-center w-100">
+                                                                <span class="badge bg-primary me-2">{{ agent.get('agent_name', 'N/D')|title }}</span>
+                                                                <span class="me-2">Punteggio: {{ agent.get('evaluation', {}).get('punteggio_finale', 'N/D') }}/10</span>
+                                                                <span class="me-2">Verosimiglianza: {{ agent.get('evaluation', {}).get('verosimiglianza', 'N/D')|title }}</span>
+                                                                {% if agent.get('evaluation', {}).get('conferma') == true or agent.get('evaluation', {}).get('conferma') == 'true' %}
+                                                                    <span class="badge bg-success ms-auto">Confermata</span>
+                                                                {% else %}
+                                                                    <span class="badge bg-warning ms-auto">Non Confermata</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="agentCollapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="agentHeading{{ loop.index }}" data-bs-parent="#allAgentsAccordion">
+                                                        <div class="accordion-body">
+                                                            {% if agent.get('evaluation', {}).get('spiegazione') %}
+                                                            <div class="mb-3">
+                                                                <strong>Spiegazione:</strong>
+                                                                <p>{{ agent.get('evaluation', {}).get('spiegazione', 'N/D') }}</p>
+                                                            </div>
+                                                            {% endif %}
+                                                            
+                                                            {% if agent.get('evaluation', {}).get('punti_sospetti') %}
+                                                            <div class="mb-3">
+                                                                <strong>Punti Sospetti:</strong>
+                                                                <ol>
+                                                                    {% for punto in agent.get('evaluation', {}).get('punti_sospetti', []) %}
+                                                                    <li>{{ punto }}</li>
+                                                                    {% endfor %}
+                                                                </ol>
+                                                            </div>
+                                                            {% endif %}
+                                                            
+                                                            {% if agent.get('evaluation', {}).get('evidenze_contro') %}
+                                                            <div class="mb-3">
+                                                                <strong>Evidenze Contro:</strong>
+                                                                <ul>
+                                                                    {% for evidenza in agent.get('evaluation', {}).get('evidenze_contro', []) %}
+                                                                    <li>{{ evidenza }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                            {% endif %}
+                                                            
+                                                            {% if agent.get('evaluation', {}).get('raccomandazioni') %}
+                                                            <div class="mb-3">
+                                                                <strong>Raccomandazioni:</strong>
+                                                                <ul>
+                                                                    {% for raccomandazione in agent.get('evaluation', {}).get('raccomandazioni', []) %}
+                                                                    <li>{{ raccomandazione }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                            {% endif %}
+                                                            
+                                                            <!-- Dettagli specifici per agente tecnologico -->
+                                                            {% if agent.get('evaluation', {}).get('limitazioni_tecniche') %}
+                                                            <div class="mb-3">
+                                                                <strong>Limitazioni Tecniche:</strong>
+                                                                <ul>
+                                                                    {% for limitazione in agent.get('evaluation', {}).get('limitazioni_tecniche', []) %}
+                                                                    <li>{{ limitazione }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                            {% endif %}
+                                                            
+                                                            <div class="mt-3 pt-3 border-top">
+                                                                <small class="text-muted">
+                                                                    Tempo elaborazione: {{ "%.2f"|format(agent.get('processing_time', 0)) }}s | 
+                                                                    Confidence: {{ agent.get('confidence_score', 0) }}
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Dettagli per Agente (Collaborative Results) -->
+                                    {% if result_data.get('collaborative_results') %}
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-secondary text-white">
+                                            <h5 class="card-title mb-0"><i class="bi bi-robot me-2"></i>Dettagli per Agente</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="accordion" id="agentDetailsAccordion">
+                                                {% for agent_result in result_data.get('collaborative_results', []) %}
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ loop.index }}">
+                                                            <span class="badge bg-dark me-2">{{ agent_result.agent|title }}</span>
+                                                            Punteggio: {{ agent_result.get('evaluation', {}).get('punteggio_finale', 'N/D') }}/10
+                                                            {% if agent_result.get('evaluation', {}).get('conferma') == true or agent_result.get('evaluation', {}).get('conferma') == 'true' %}
+                                                                <span class="badge bg-success ms-2">Confermata</span>
+                                                            {% else %}
+                                                                <span class="badge bg-warning ms-2">Non Confermata</span>
+                                                            {% endif %}
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#agentDetailsAccordion">
+                                                        <div class="accordion-body">
+                                                            <p><strong>Spiegazione:</strong> {{ agent_result.get('evaluation', {}).get('spiegazione', 'N/D') }}</p>
+                                                            {% if agent_result.queries %}
+                                                            <p><strong>Query Utilizzate:</strong></p>
+                                                            <ul>
+                                                                {% for q in agent_result.queries %}
+                                                                    <li>{{ q }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                            {% endif %}
+                                                            {% if agent_result.get('evaluation', {}).get('evidenze_a_favore') %}
+                                                            <p><strong>Evidenze a Favore:</strong></p>
+                                                            <ul>
+                                                                {% for ev in agent_result.get('evaluation', {}).get('evidenze_a_favore', []) %}
+                                                                    <li>{{ ev }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                            {% endif %}
+                                                            {% if agent_result.get('evaluation', {}).get('evidenze_contro') %}
+                                                            <p><strong>Evidenze Contro:</strong></p>
+                                                            <ul>
+                                                                {% for ev in agent_result.get('evaluation', {}).get('evidenze_contro', []) %}
+                                                                    <li>{{ ev }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                            {% endif %}
+                                                            {% if agent_result.results %}
+                                                            <button class="btn btn-sm btn-outline-info mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#rawResults{{ loop.index }}" aria-expanded="false" aria-controls="rawResults{{ loop.index }}">
+                                                                Mostra Risultati Ricerca Raw
+                                                            </button>
+                                                            <div class="collapse mt-2" id="rawResults{{ loop.index }}">
+                                                                <pre class="bg-light p-2 rounded small">{{ agent_result.results }}</pre>
+                                                            </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Informazioni Tecniche -->
+                                    <div class="card mb-3">
+                                        <div class="card-header"><strong>Informazioni Tecniche</strong></div>
+                                        <div class="card-body">
+                                            <p><strong>Provider:</strong> {{ analysis.result.provider|title }}</p>
+                                            <p><strong>Modello:</strong> {{ analysis.result.model|title }}</p>
+                                            <p><strong>Lingua:</strong> {{ analysis.result.language|upper }}</p>
+                                            <p><strong>Tempo Elaborazione:</strong> {{ "%.2f"|format(analysis.result.processing_time) }}s</p>
+                                            <p><strong>Successo:</strong> 
+                                                {% if analysis.result.success %}
+                                                    <span class="badge bg-success">Sì</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">No</span>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </section>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Analisi non trovata o non accessibile.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

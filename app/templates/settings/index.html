@@ -1,0 +1,393 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Impostazioni - News Agent Web{% endblock %}
+{% block page_title %}⚙️ Impostazioni{% endblock %}
+
+{% block content %}
+<!-- Navigation Menu -->
+<div class="navbar navbar-expand-md navbar-light d-print-none">
+    <div class="container-xl">
+        <div class="navbar-nav">
+            <a class="nav-link" href="/">
+                <i class="bi bi-house me-2"></i>
+                Home
+            </a>
+            <a class="nav-link active" href="/settings">
+                <i class="bi bi-gear me-2"></i>
+                Settings
+            </a>
+            <a class="nav-link" href="/news">
+                <i class="bi bi-newspaper me-2"></i>
+                Articoli
+            </a>
+            <a class="nav-link" href="/analysis">
+                <i class="bi bi-cpu me-2"></i>
+                Analisi
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Configurazione AI</h3>
+                    </div>
+            <div class="card-body">
+                <form hx-post="/settings/api/settings" hx-target="#settings-result" hx-indicator="#settings-loading">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Provider AI Predefinito</label>
+                                <select class="form-select" name="ai_provider">
+                                    <option value="ollama" {% if settings.ai_provider == 'ollama' %}selected{% endif %}>Ollama (Locale)</option>
+                                    <option value="openai" {% if settings.ai_provider == 'openai' %}selected{% endif %}>OpenAI</option>
+                                    <option value="anthropic" {% if settings.ai_provider == 'anthropic' %}selected{% endif %}>Anthropic</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Modello AI</label>
+                                <input type="text" class="form-control" name="ai_model" value="{{ settings.ai_model }}" 
+                                       placeholder="es. qwen2:7b-instruct">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Lingua Predefinita</label>
+                                <select class="form-select" name="language">
+                                    <option value="it" {% if settings.language == 'it' %}selected{% endif %}>Italiano</option>
+                                    <option value="en" {% if settings.language == 'en' %}selected{% endif %}>English</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Articoli per Pagina</label>
+                                <input type="number" class="form-control" name="articles_per_page" 
+                                       value="{{ settings.articles_per_page }}" min="5" max="50">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="enable_multilingual" 
+                                   {% if settings.enable_multilingual %}checked{% endif %}>
+                            <span class="form-check-label">Abilita Supporto Multilingue</span>
+                        </label>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Fonti RSS (una per riga)</label>
+                        <textarea class="form-control" name="rss_sources" rows="5" 
+                                  placeholder="https://www.ansa.it/sito/ansait_rss.xml
+https://www.repubblica.it/rss/homepage/rss2.0.xml
+https://www.corriere.it/rss/homepage.xml
+https://www.ilsole24ore.com/rss/homepage.xml">{{ settings.rss_sources if settings.rss_sources is string else (settings.rss_sources | join('\n')) }}</textarea>
+                        <div class="form-text">Inserisci un URL RSS per riga. Esempi: Ansa, Repubblica, Corriere, Sole24Ore</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <span class="loading-spinner spinner-border spinner-border-sm me-2" id="settings-loading"></span>
+                            <i class="bi bi-save me-1"></i>
+                            Salva Impostazioni
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="forceCleanRSS()">
+                            <i class="bi bi-brush me-1"></i>
+                            Pulisci RSS
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="settings-result"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🔑 Chiavi API</h3>
+            </div>
+            <div class="card-body">
+                <form id="api-keys-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">OpenAI API Key</label>
+                                <input type="password" class="form-control" name="openai_api_key" 
+                                       value="" autocomplete="off"
+                                       placeholder="sk-...">
+                                <div class="form-text">Chiave API per OpenAI GPT</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Anthropic API Key</label>
+                                <input type="password" class="form-control" name="anthropic_api_key" 
+                                       value="" autocomplete="off"
+                                       placeholder="sk-ant-...">
+                                <div class="form-text">Chiave API per Anthropic Claude</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">ScrapingDog API Key</label>
+                                <input type="password" class="form-control" name="scrapingdog_api_key" 
+                                       value="" autocomplete="off"
+                                       placeholder="...">
+                                <div class="form-text">Chiave API per ricerche di verifica (opzionale)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-success me-2">
+                            <span class="loading-spinner spinner-border spinner-border-sm me-2" id="api-keys-loading" style="display: none;"></span>
+                            <i class="bi bi-key me-1"></i>
+                            Salva Chiavi API
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="cleanApiKeys()">
+                            <i class="bi bi-brush me-1"></i>
+                            Pulisci Chiavi
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="api-keys-result"></div>
+                <div id="api-keys-test-result" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle API keys form submission
+    const apiKeysForm = document.getElementById('api-keys-form');
+    const apiKeysLoading = document.getElementById('api-keys-loading');
+    const apiKeysResult = document.getElementById('api-keys-result');
+    
+    apiKeysForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show loading
+        apiKeysLoading.style.display = 'inline-block';
+        
+        // Collect form data
+        const formData = new FormData(apiKeysForm);
+        const data = {};
+        
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        // If inputs contain only asterisks (masked), do not send to avoid overwriting real keys
+        ['openai_api_key','anthropic_api_key','scrapingdog_api_key'].forEach(k => {
+            if (data[k] && /^\*+$/.test(data[k])) {
+                delete data[k];
+            }
+        });
+        
+        try {
+            const response = await fetch('/settings/api/api-keys', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                apiKeysResult.innerHTML = `
+                    <div class="alert alert-success mt-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        ${result.message}
+                    </div>
+                `;
+                // Update inputs with masked placeholders so the user sees they are saved
+                if (result.openai_masked !== undefined) {
+                    document.querySelector('input[name="openai_api_key"]').value = result.openai_masked;
+                    if (result.saved_openai) {
+                        document.querySelector('input[name="openai_api_key"]').classList.add('is-valid');
+                        setTimeout(()=>document.querySelector('input[name="openai_api_key"]').classList.remove('is-valid'),1500);
+                    }
+                }
+                if (result.anthropic_masked !== undefined) {
+                    document.querySelector('input[name="anthropic_api_key"]').value = result.anthropic_masked;
+                    if (result.saved_anthropic) {
+                        document.querySelector('input[name="anthropic_api_key"]').classList.add('is-valid');
+                        setTimeout(()=>document.querySelector('input[name="anthropic_api_key"]').classList.remove('is-valid'),1500);
+                    }
+                }
+                if (result.scrapingdog_masked !== undefined) {
+                    document.querySelector('input[name="scrapingdog_api_key"]').value = result.scrapingdog_masked;
+                    if (result.saved_scrapingdog) {
+                        document.querySelector('input[name="scrapingdog_api_key"]').classList.add('is-valid');
+                        setTimeout(()=>document.querySelector('input[name="scrapingdog_api_key"]').classList.remove('is-valid'),1500);
+                    }
+                }
+            } else {
+                apiKeysResult.innerHTML = `
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Errore: ${result.error}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            apiKeysResult.innerHTML = `
+                <div class="alert alert-danger mt-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Errore di connessione: ${error.message}
+                </div>
+            `;
+        } finally {
+            // Hide loading
+            apiKeysLoading.style.display = 'none';
+        }
+    });
+    
+    // On load, fetch masked presence so inputs show bullets if keys are saved
+    (async () => {
+        try {
+            const resp = await fetch('/settings/api/api-keys', { method: 'GET' });
+            const data = await resp.json();
+            console.log('Masked keys loaded', data);
+            if (data.openai_masked !== undefined) {
+                document.querySelector('input[name="openai_api_key"]').value = data.openai_masked;
+            }
+            if (data.anthropic_masked !== undefined) {
+                document.querySelector('input[name="anthropic_api_key"]').value = data.anthropic_masked;
+            }
+            if (data.scrapingdog_masked !== undefined) {
+                document.querySelector('input[name="scrapingdog_api_key"]').value = data.scrapingdog_masked;
+            }
+        } catch (err) {
+            console.warn('Unable to load masked keys', err);
+        }
+    })();
+    // Function to force clean RSS sources
+    window.forceCleanRSS = async function() {
+        try {
+            const response = await fetch('/settings/api/force-clean', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'alert alert-success mt-3';
+                resultDiv.innerHTML = `
+                    <i class="bi bi-check-circle me-2"></i>
+                    ${result.message}
+                `;
+                document.getElementById('api-keys-result').appendChild(resultDiv);
+                
+                // Reload page after 2 seconds to show cleaned data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                // Show error message
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'alert alert-danger mt-3';
+                resultDiv.innerHTML = `
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Errore: ${result.error}
+                `;
+                document.getElementById('api-keys-result').appendChild(resultDiv);
+            }
+        } catch (error) {
+            // Show connection error
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'alert alert-danger mt-3';
+            resultDiv.innerHTML = `
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Errore di connessione: ${error.message}
+            `;
+            document.getElementById('api-keys-result').appendChild(resultDiv);
+        }
+    };
+    
+    // Function to clean corrupted API keys
+    window.cleanApiKeys = async function() {
+        try {
+            const response = await fetch('/settings/api/clean-api-keys', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'alert alert-success mt-3';
+                resultDiv.innerHTML = `
+                    <i class="bi bi-check-circle me-2"></i>
+                    ${result.message}
+                `;
+                document.getElementById('api-keys-result').appendChild(resultDiv);
+                
+                // Clear input fields
+                document.querySelector('input[name="openai_api_key"]').value = '';
+                document.querySelector('input[name="anthropic_api_key"]').value = '';
+                document.querySelector('input[name="scrapingdog_api_key"]').value = '';
+                
+                // Reload page after 2 seconds to show cleaned data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                // Show error message
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'alert alert-danger mt-3';
+                resultDiv.innerHTML = `
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Errore: ${result.error}
+                `;
+                document.getElementById('api-keys-result').appendChild(resultDiv);
+            }
+        } catch (error) {
+            // Show connection error
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'alert alert-danger mt-3';
+            resultDiv.innerHTML = `
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Errore di connessione: ${error.message}
+            `;
+            document.getElementById('api-keys-result').appendChild(resultDiv);
+        }
+    };
+});
+</script>
+
+        </div> <!-- container-xl -->
+    </div> <!-- page-body -->
+
+{% endblock %}

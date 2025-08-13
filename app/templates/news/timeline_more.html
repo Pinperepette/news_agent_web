@@ -1,0 +1,25 @@
+{% for article in articles %}
+<div class="article-item">
+    <div class="article-header">
+        <span class="source-name">{{ article.source }}</span>
+    </div>
+    
+    <h4 class="article-title">{{ article.title }}</h4>
+    
+    {% if article.summary %}
+    <p class="article-summary">{{ article.summary }}</p>
+    {% endif %}
+    
+    <div class="article-actions">
+        <a href="/news/article/{{ article.id }}" class="btn btn-examine">
+            <i class="bi bi-eye me-2"></i>
+            Visualizza
+        </a>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Scroll trigger for infinite scroll -->
+{% if has_more %}
+<div id="scroll-trigger" data-offset="{{ offset }}" style="height: 1px; visibility: hidden;"></div>
+{% endif %}

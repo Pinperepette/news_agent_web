@@ -1,0 +1,37 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Pagina non trovata - News Agent Web{% endblock %}
+{% block page_title %}404 - Pagina non trovata{% endblock %}
+
+{% block content %}
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                        </div>
+                        <h1 class="display-4 text-muted">404</h1>
+                        <h2 class="h3 mb-3">Pagina non trovata</h2>
+                        <p class="text-muted mb-4">
+                            La pagina che stai cercando non esiste o è stata spostata LOL.
+                        </p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="/" class="btn btn-primary">
+                                <i class="bi bi-house me-2"></i>
+                                Torna alla Home
+                            </a>
+                            <a href="/news" class="btn btn-outline-primary">
+                                <i class="bi bi-newspaper me-2"></i>
+                                Vai alle News
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
