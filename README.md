@@ -1,5 +1,7 @@
 # News Agent Web
 
+> **🚀 Transform your news consumption with AI-powered critical analysis. Think critically, verify facts, and understand the world beyond headlines.**
+
 A modern web-based news analysis platform with AI-powered critical analysis, built with Flask, MongoDB, and HTMX.
 
 ## Features
@@ -35,30 +37,77 @@ A modern web-based news analysis platform with AI-powered critical analysis, bui
 ### Prerequisites
 - Docker & Docker Compose
 - Ollama running locally (`ollama serve`)
-- MongoDB locale (opzionale)
+- MongoDB (optional - can use Docker)
 
-### Scenario 1: Hai già MongoDB e Ollama locali
+### Scenario 1: You already have MongoDB and Ollama locally
 ```bash
 git clone <your-repo>
 cd news_agent_web
 docker-compose up news-agent-standalone --build
 ```
-Vai su http://localhost:8080
+Go to http://localhost:8080
 
-### Scenario 2: Vuoi MongoDB in Docker
+### Scenario 2: You want MongoDB in Docker
 ```bash
 git clone <your-repo>
 cd news_agent_web
-# Modifica docker-compose.yml: decommenta la sezione mongodb
+# Modify docker-compose.yml: uncomment the mongodb section
 docker-compose --profile full up --build
 ```
 
-### Scenario 3: Solo MongoDB in Docker
+### Scenario 3: Only MongoDB in Docker
 ```bash
-docker-compose --profile mongodb-only up -d  # Solo MongoDB
-docker-compose up news-agent-standalone --build  # Poi l'app
+docker-compose --profile mongodb-only up -d  # Only MongoDB
+docker-compose up news-agent-standalone --build  # Then the app
 ```
 
+
+---
+
+## Setup Required Services
+
+### Installing Ollama (Required for Local AI)
+
+1. **Install Ollama:**
+   ```bash
+   # macOS/Linux
+   curl -fsSL https://ollama.ai/install.sh | sh
+   
+   # Windows
+   # Download from https://ollama.ai/download
+   ```
+
+2. **Start Ollama service:**
+   ```bash
+   ollama serve
+   ```
+
+3. **Download a model (optional but recommended):**
+   ```bash
+   ollama pull llama2:7b
+   # or
+   ollama pull mistral:7b
+   ```
+
+### API Keys (Optional but Recommended)
+
+#### **OpenAI API Key (Optional)**
+- **Get your key:** [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+- **Cost:** ~$0.01-0.03 per 1K tokens
+- **Models:** GPT-4, GPT-3.5-turbo
+
+#### **Anthropic Claude API Key (Optional)**
+- **Get your key:** [https://console.anthropic.com/](https://console.anthropic.com/)
+- **Cost:** ~$0.0025-0.015 per 1K tokens
+- **Models:** Claude 3 Haiku, Sonnet, Opus
+
+#### **ScrapingDog API Key (Required for Web Verification)**
+- **Get your key:** [https://www.scrapingdog.com/](https://www.scrapingdog.com/)
+- **Cost:** $29/month for 1,000 requests
+- **Why required:** Enables web search and fact verification
+- **Alternative:** Free tier available for testing
+
+**Note:** All API keys are managed through the web interface and stored securely in MongoDB.
 
 ---
 
@@ -113,16 +162,44 @@ docker-compose up news-agent-standalone --build  # Poi l'app
 
 ## Configuration
 
-**Note**: API keys for AI providers (OpenAI, Anthropic, ScrapingDog) are managed through the web interface and stored securely in the MongoDB database. No need to configure them in environment variables.
+### API Keys Management
 
-The application uses sensible defaults for local development. For production deployment, you can configure environment variables as needed.
+All API keys are managed through the web interface and stored securely in the MongoDB database:
+
+1. **Go to Settings** (`/settings`) in the web interface
+2. **Configure your API keys** for the services you want to use
+3. **Test the connections** to ensure everything works
+4. **Keys are encrypted** and stored securely in the database
+
+### Required vs Optional Services
+
+- **🟢 Required:** Ollama (for local AI), MongoDB (database)
+- **🟡 Recommended:** OpenAI/Claude (for better AI analysis)
+- **🔴 Required for verification:** ScrapingDog (enables web search and fact-checking)
+
+### Environment Variables (Optional)
+
+The application uses sensible defaults for local development. For production deployment, you can configure these environment variables:
+
+```env
+# Flask Configuration
+FLASK_APP=app
+FLASK_ENV=production
+SECRET_KEY=your-production-secret-key
+
+# MongoDB Configuration
+MONGO_URI=mongodb://your-mongodb-server:27017/news_agent_web
+
+# Ollama Configuration
+OLLAMA_BASE_URL=http://your-ollama-server:11434
+```
 
 ## Usage
 
 ### 1. News Aggregation
 
 - Navigate to `/news` to view aggregated articles
-- Click "Aggiorna" to fetch fresh news from RSS feeds
+- Click "Refresh" to fetch fresh news from RSS feeds
 - Filter by language (IT/EN)
 - View article details and perform analysis
 
@@ -233,11 +310,19 @@ python -m pytest --cov=app
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Make your changes** and commit them (`git commit -m 'Add amazing feature'`)
+4. **Add tests** if applicable
+5. **Push to the branch** (`git push origin feature/amazing-feature`)
+6. **Submit a pull request**
+
+### Development Guidelines
+
+- Follow PEP 8 style guidelines
+- Add docstrings to new functions
+- Test your changes locally before submitting
+- Update documentation if needed
 
 ## License
 
@@ -245,9 +330,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- **Tabler**: Modern UI components
-- **HTMX**: Dynamic web interactions
-- **Flask**: Web framework
-- **MongoDB**: Database
-- **Ollama**: Local AI inference
+- **Tabler**: Modern UI components and design system
+- **HTMX**: Dynamic web interactions without JavaScript
+- **Flask**: Python web framework
+- **MongoDB**: NoSQL database
+- **Ollama**: Local AI inference engine
+- **OpenAI & Anthropic**: Cloud AI services
+- **ScrapingDog**: Web scraping and search API
+
+## Related Projects
+
+- **[news_agent](https://github.com/Pinperepette/news_agent)** - CLI version with Rich terminal interface
+- **news_agent_web** - Web version with Flask and modern browser interface
+
 
